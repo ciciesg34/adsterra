@@ -54,19 +54,54 @@
 
         /* ===== PLAYER WRAPPER ===== */
         .player-wrapper {
-            width: 100%;
-            max-width: 100%;
-            aspect-ratio: 16/9;
-            max-height: 100vh;
-            max-height: 100dvh;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
             background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             overflow: hidden;
+            position: relative;
+        }
+
+        /* Container untuk video + Plyr */
+        .player-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .player-inner video,
+        .player-inner .plyr {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+        }
+
+        .plyr {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .plyr__video-wrapper {
+            width: 100% !important;
+            height: 100% !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         video {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
+            max-width: 100%;
+            max-height: 100%;
+            width: auto !important;
+            height: auto !important;
+            display: block;
             outline: none;
         }
 
@@ -109,8 +144,6 @@
         }
 
         .plyr__badge { background: #e50914 !important; }
-
-        /* Smooth controls fade */
         .plyr__controls { transition: opacity 0.3s ease !important; }
 
         /* ===== LOADING SCREEN ===== */
@@ -325,10 +358,6 @@
             .admin-page { padding: 28px 14px; }
             .plyr__control--overlaid { padding: 18px !important; }
         }
-
-        @media (min-width: 1600px) {
-            .player-wrapper { max-width: 1400px; border-radius: 8px; }
-        }
     </style>
 </head>
 <body>
@@ -356,7 +385,9 @@
 
     <!-- PLAYER -->
     <div class="player-wrapper" id="playerWrapper">
-        <video id="plyrPlayer" controls crossorigin playsinline disablePictureInPicture></video>
+        <div class="player-inner">
+            <video id="plyrPlayer" controls crossorigin playsinline></video>
+        </div>
     </div>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
@@ -390,9 +421,7 @@
             function saveMapping() {
                 try {
                     localStorage.setItem(STORAGE_KEY, JSON.stringify({ codeToIndex, indexToCode }));
-                } catch (e) {
-                    // localStorage penuh atau tidak tersedia
-                }
+                } catch (e) {}
             }
 
             function loadMapping() {
@@ -403,9 +432,7 @@
                         codeToIndex = p.codeToIndex || {};
                         indexToCode = p.indexToCode || {};
                     }
-                } catch (e) {
-                    // Data corrupt, reset
-                }
+                } catch (e) {}
             }
 
             function initCodes(urls) {
@@ -423,7 +450,6 @@
                     }
                 });
 
-                // Cleanup kode untuk index yang sudah tidak ada
                 const maxIdx = urls.length - 1;
                 Object.keys(indexToCode).forEach(idx => {
                     if (parseInt(idx) > maxIdx) {
@@ -488,14 +514,45 @@
                     blankVideo: 'https://cdn.plyr.io/static/blank.mp4'
                 });
 
+                // Deteksi aspect ratio & sesuaikan ukuran player
+                videoEl.addEventListener('loadedmetadata', function() {
+                    const vw = videoEl.videoWidth;
+                    const vh = videoEl.videoHeight;
+                    
+                    if (vw && vh) {
+                        const ratio = vw / vh;
+                        const wrapper = document.getElementById('playerWrapper');
+                        const inner = wrapper.querySelector('.player-inner');
+                        
+                        // Hapus constraint width/height dari Plyr
+                        const plyrEl = wrapper.querySelector('.plyr');
+                        
+                        if (ratio >= 1) {
+                            // Landscape / Square → full width, tinggi menyesuaikan
+                            inner.style.width = '100%';
+                            inner.style.height = '100%';
+                            if (plyrEl) {
+                                plyrEl.style.maxWidth = '100%';
+                                plyrEl.style.maxHeight = '100%';
+                            }
+                        } else {
+                            // Portrait → tinggi full, lebar menyesuaikan
+                            inner.style.width = '100%';
+                            inner.style.height = '100%';
+                            if (plyrEl) {
+                                plyrEl.style.maxWidth = '100%';
+                                plyrEl.style.maxHeight = '100%';
+                            }
+                        }
+                    }
+                });
+
                 // Events
                 plyrInstance.on('ready', () => {
                     document.getElementById('loadingScreen').classList.add('hidden');
                     const promise = plyrInstance.play();
                     if (promise && promise.catch) {
-                        promise.catch(() => {
-                            // Autoplay blocked, user need to click
-                        });
+                        promise.catch(() => {});
                     }
                 });
 
@@ -543,10 +600,8 @@
                     <p class="footer-note">Klik kode untuk menonton &bullet; Klik Salin untuk share</p>
                 </div>`;
 
-                // Global copy function
                 window._copyLink = function(text, btn) {
                     navigator.clipboard.writeText(text).then(() => {
-                        const originalHTML = btn.innerHTML;
                         btn.textContent = '✓ Tersalin';
                         btn.classList.add('copied');
                         setTimeout(() => {
@@ -554,7 +609,6 @@
                             btn.classList.remove('copied');
                         }, 2000);
                     }).catch(() => {
-                        // Fallback
                         const ta = document.createElement('textarea');
                         ta.value = text;
                         ta.style.position = 'fixed';
