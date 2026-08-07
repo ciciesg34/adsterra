@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamingBox</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='25,15 80,50 25,85' fill='%23e50914'/></svg>">
+    
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Plyr CSS -->
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    
+    <!-- Primary Meta -->
+    <meta name="description" content="Tonton video streaming berkualitas tinggi">
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <!-- Open Graph (WhatsApp, Facebook, Telegram) -->
+    <meta property="og:title" content="StreamingBox">
+    <meta property="og:description" content="Tonton video sekarang">
+    <meta property="og:type" content="video.movie">
+    <meta property="og:image" content="https://placehold.co/1200x630/0a0a0a/e50914?text=StreamingBox&font=Inter">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:url" content="">
+    <meta property="og:site_name" content="StreamingBox">
+    <meta property="og:locale" content="id_ID">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="StreamingBox">
+    <meta name="twitter:description" content="Tonton video sekarang">
+    <meta name="twitter:image" content="https://placehold.co/1200x630/0a0a0a/e50914?text=StreamingBox&font=Inter">
+    
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0a0a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            min-height: 100dvh;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            overflow: hidden;
+        }
+
+        /* ===== PLAYER WRAPPER ===== */
+        .player-wrapper {
+            width: 100%;
+            max-width: 100%;
+            aspect-ratio: 16/9;
+            max-height: 100vh;
+            max-height: 100dvh;
+            background: #000;
+            overflow: hidden;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            outline: none;
+        }
+
+        /* ===== PLYR DARK THEME OVERRIDE ===== */
+        :root {
+            --plyr-color-main: #e50914;
+            --plyr-video-control-background-hover: rgba(10, 10, 10, 0.95);
+            --plyr-video-control-color: #ffffff;
+            --plyr-video-control-color-hover: #e50914;
+            --plyr-menu-background: rgba(20, 20, 20, 0.98);
+            --plyr-menu-color: #cccccc;
+            --plyr-menu-item-arrow-color: #e50914;
+            --plyr-tooltip-background: rgba(20, 20, 20, 0.95);
+            --plyr-tooltip-color: #ffffff;
+            --plyr-range-fill-background: #e50914;
+            --plyr-range-track-background: #333;
+        }
+
+        .plyr--full-ui input[type=range] { color: #e50914; }
+
+        .plyr__control--overlaid {
+            background: rgba(229, 9, 20, 0.9) !important;
+            border-radius: 50% !important;
+            padding: 22px !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            box-shadow: 0 0 40px rgba(229, 9, 20, 0.35) !important;
+            backdrop-filter: blur(4px);
+        }
+
+        .plyr__control--overlaid:hover {
+            background: #e50914 !important;
+            transform: scale(1.1) !important;
+            box-shadow: 0 0 60px rgba(229, 9, 20, 0.5) !important;
+        }
+
+        .plyr__control--overlaid svg { width: 20px !important; height: 20px !important; }
+
+        .plyr__menu__container .plyr__control[role=menuitemradio][aria-checked=true]::before {
+            background: #e50914;
+        }
+
+        .plyr__badge { background: #e50914 !important; }
+
+        /* Smooth controls fade */
+        .plyr__controls { transition: opacity 0.3s ease !important; }
+
+        /* ===== LOADING SCREEN ===== */
+        .loading-screen {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #0a0a0a;
+            z-index: 9999;
+            gap: 24px;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .spinner-wrapper { position: relative; }
+
+        .spinner {
+            width: 52px;
+            height: 52px;
+            border: 3px solid #1a1a1a;
+            border-top-color: #e50914;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-screen p {
+            color: #444;
+            font-size: 0.8rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 500;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        /* ===== ERROR SCREEN ===== */
+        .error-screen {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #0a0a0a;
+            z-index: 9999;
+            gap: 12px;
+            color: #fff;
+        }
+
+        .error-screen.hidden { display: none; }
+
+        .error-icon {
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            background: rgba(229, 9, 20, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .error-icon svg {
+            width: 40px;
+            height: 40px;
+            stroke: #e50914;
+            fill: none;
+            stroke-width: 1.5;
+        }
+
+        .error-screen h2 {
+            font-weight: 500;
+            font-size: 1.1rem;
+            color: #bbb;
+        }
+
+        .error-screen span {
+            font-size: 0.8rem;
+            color: #444;
+        }
+
+        /* ===== ADMIN PAGE ===== */
+        .admin-page {
+            background: #0a0a0a;
+            color: #fff;
+            min-height: 100vh;
+            min-height: 100dvh;
+            padding: 48px 32px;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            max-width: 740px;
+            margin: 0 auto;
+        }
+
+        .admin-page .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #e50914;
+            margin-bottom: 36px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .admin-page .logo svg { width: 26px; height: 26px; fill: #e50914; }
+
+        .admin-page h2 {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .total-info {
+            color: #444;
+            font-size: 0.85rem;
+            margin-bottom: 28px;
+            font-weight: 500;
+        }
+
+        .total-info span { color: #e50914; font-weight: 700; }
+
+        .code-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .code-table th {
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #444;
+            border-bottom: 1px solid #141414;
+            font-weight: 600;
+        }
+
+        .code-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #0f0f0f;
+            font-size: 0.9rem;
+            vertical-align: middle;
+        }
+
+        .code-table tr:hover td { background: rgba(255, 255, 255, 0.01); }
+
+        .code-table .kode {
+            color: #e50914;
+            font-weight: 700;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            letter-spacing: 2px;
+            font-size: 1.05rem;
+        }
+
+        .code-table .link {
+            color: #4caf50;
+            text-decoration: none;
+            font-size: 0.8rem;
+            word-break: break-all;
+            transition: 0.2s;
+            font-weight: 500;
+        }
+
+        .code-table .link:hover { color: #6fcf97; }
+
+        .copy-btn {
+            background: #111;
+            border: 1px solid #222;
+            color: #888;
+            padding: 7px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .copy-btn:hover { background: #1a1a1a; border-color: #e50914; color: #e50914; }
+        .copy-btn.copied { background: #0a1f12; border-color: #4caf50; color: #4caf50; }
+
+        .footer-note {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #111;
+            color: #333;
+            font-size: 0.75rem;
+            text-align: center;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 600px) {
+            .code-table .link { font-size: 0.7rem; }
+            .code-table th, .code-table td { padding: 10px 8px; }
+            .admin-page { padding: 28px 14px; }
+            .plyr__control--overlaid { padding: 18px !important; }
+        }
+
+        @media (min-width: 1600px) {
+            .player-wrapper { max-width: 1400px; border-radius: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LOADING SCREEN -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="spinner-wrapper">
+            <div class="spinner"></div>
+        </div>
+        <p>Memuat Video</p>
+    </div>
+
+    <!-- ERROR SCREEN -->
+    <div class="error-screen hidden" id="errorScreen">
+        <div class="error-icon">
+            <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+        </div>
+        <h2>Video Tidak Ditemukan</h2>
+        <span>URL tidak valid atau video telah dihapus</span>
+    </div>
+
+    <!-- PLAYER -->
+    <div class="player-wrapper" id="playerWrapper">
+        <video id="plyrPlayer" controls crossorigin playsinline disablePictureInPicture></video>
+    </div>
+
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+    
+    <script>
+        (function() {
+            // ===== STATE =====
+            let semuaUrl = [];
+            let codeToIndex = {};
+            let indexToCode = {};
+            let plyrInstance = null;
+
+            // ===== RANDOM CODE GENERATOR =====
+            const CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const randomCode = () => Array.from({ length: 4 }, () => CHARS[Math.floor(Math.random() * CHARS.length)]).join('');
+            
+            function uniqueCode(existing) {
+                let c, tries = 0;
+                const maxTries = 300;
+                do {
+                    c = randomCode();
+                    tries++;
+                    if (tries > maxTries) c = randomCode() + CHARS[Math.floor(Math.random() * CHARS.length)];
+                } while (existing.has(c));
+                return c;
+            }
+
+            // ===== LOCAL STORAGE PERSISTENCE =====
+            const STORAGE_KEY = 'sb_v2_codes';
+
+            function saveMapping() {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify({ codeToIndex, indexToCode }));
+                } catch (e) {
+                    // localStorage penuh atau tidak tersedia
+                }
+            }
+
+            function loadMapping() {
+                try {
+                    const d = localStorage.getItem(STORAGE_KEY);
+                    if (d) {
+                        const p = JSON.parse(d);
+                        codeToIndex = p.codeToIndex || {};
+                        indexToCode = p.indexToCode || {};
+                    }
+                } catch (e) {
+                    // Data corrupt, reset
+                }
+            }
+
+            function initCodes(urls) {
+                loadMapping();
+                const existing = new Set(Object.keys(codeToIndex));
+                let needSave = false;
+
+                urls.forEach((_, i) => {
+                    if (!indexToCode[i]) {
+                        const c = uniqueCode(existing);
+                        indexToCode[i] = c;
+                        codeToIndex[c] = i;
+                        existing.add(c);
+                        needSave = true;
+                    }
+                });
+
+                // Cleanup kode untuk index yang sudah tidak ada
+                const maxIdx = urls.length - 1;
+                Object.keys(indexToCode).forEach(idx => {
+                    if (parseInt(idx) > maxIdx) {
+                        const c = indexToCode[idx];
+                        delete codeToIndex[c];
+                        delete indexToCode[idx];
+                        needSave = true;
+                    }
+                });
+
+                if (needSave) saveMapping();
+            }
+
+            // ===== URL PARSING =====
+            function getCodeFromURL() {
+                return window.location.pathname.replace(/^\/+|\/+$/g, '') || null;
+            }
+
+            // ===== VIDEO PLAYER =====
+            function playVideo(url, code) {
+                const isHLS = url.includes('.m3u8');
+                const type = isHLS ? 'application/x-mpegURL' : 'video/mp4';
+                const videoEl = document.getElementById('plyrPlayer');
+
+                // Reset source
+                videoEl.innerHTML = '';
+                const source = document.createElement('source');
+                source.src = url;
+                source.type = type;
+                videoEl.appendChild(source);
+
+                // Destroy existing player
+                if (plyrInstance) {
+                    try { plyrInstance.destroy(); } catch(e) {}
+                }
+
+                // Init Plyr
+                plyrInstance = new Plyr(videoEl, {
+                    controls: [
+                        'play-large',
+                        'play',
+                        'progress',
+                        'current-time',
+                        'duration',
+                        'mute',
+                        'volume',
+                        'settings',
+                        'pip',
+                        'airplay',
+                        'fullscreen'
+                    ],
+                    settings: ['quality', 'speed'],
+                    speed: { selected: 1, options: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2] },
+                    autoplay: true,
+                    muted: false,
+                    clickToPlay: true,
+                    hideControls: false,
+                    resetOnEnd: false,
+                    disableContextMenu: false,
+                    loadSprite: true,
+                    iconPrefix: 'plyr',
+                    blankVideo: 'https://cdn.plyr.io/static/blank.mp4'
+                });
+
+                // Events
+                plyrInstance.on('ready', () => {
+                    document.getElementById('loadingScreen').classList.add('hidden');
+                    const promise = plyrInstance.play();
+                    if (promise && promise.catch) {
+                        promise.catch(() => {
+                            // Autoplay blocked, user need to click
+                        });
+                    }
+                });
+
+                plyrInstance.on('error', () => {
+                    document.getElementById('loadingScreen').classList.add('hidden');
+                    document.getElementById('errorScreen').classList.remove('hidden');
+                    document.getElementById('playerWrapper').style.display = 'none';
+                });
+
+                // Update OG URL
+                const ogUrlMeta = document.querySelector('meta[property="og:url"]');
+                if (ogUrlMeta) ogUrlMeta.setAttribute('content', location.origin + '/' + code);
+            }
+
+            // ===== ADMIN PAGE =====
+            function showAdminPage() {
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('playerWrapper').style.display = 'none';
+
+                const rows = semuaUrl.map((_, i) => {
+                    const kode = indexToCode[i] || '????';
+                    const link = location.origin + '/' + kode;
+                    return `
+                    <tr>
+                        <td><span class="kode">${kode}</span></td>
+                        <td><a href="${link}" class="link" target="_blank" rel="noopener">${link}</a></td>
+                        <td><button class="copy-btn" onclick="window._copyLink('${link}', this)">Salin</button></td>
+                    </tr>`;
+                }).join('');
+
+                document.body.innerHTML = `
+                <div class="admin-page">
+                    <div class="logo">
+                        <svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg>
+                        StreamingBox
+                    </div>
+                    <p class="total-info">Total <span>${semuaUrl.length}</span> video tersedia</p>
+                    <h2>🔗 Kode Video</h2>
+                    <table class="code-table">
+                        <thead>
+                            <tr><th>Kode</th><th>URL Tonton</th><th></th></tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                    <p class="footer-note">Klik kode untuk menonton &bullet; Klik Salin untuk share</p>
+                </div>`;
+
+                // Global copy function
+                window._copyLink = function(text, btn) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        const originalHTML = btn.innerHTML;
+                        btn.textContent = '✓ Tersalin';
+                        btn.classList.add('copied');
+                        setTimeout(() => {
+                            btn.textContent = 'Salin';
+                            btn.classList.remove('copied');
+                        }, 2000);
+                    }).catch(() => {
+                        // Fallback
+                        const ta = document.createElement('textarea');
+                        ta.value = text;
+                        ta.style.position = 'fixed';
+                        ta.style.opacity = '0';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        btn.textContent = '✓ Tersalin';
+                        btn.classList.add('copied');
+                        setTimeout(() => { btn.textContent = 'Salin'; btn.classList.remove('copied'); }, 2000);
+                    });
+                };
+            }
+
+            // ===== INIT =====
+            function init() {
+                fetch('data.json')
+                    .then(r => {
+                        if (!r.ok) throw new Error('HTTP ' + r.status);
+                        return r.json();
+                    })
+                    .then(data => {
+                        if (!Array.isArray(data) || data.length === 0) {
+                            throw new Error('Data kosong');
+                        }
+                        semuaUrl = data;
+                        initCodes(semuaUrl);
+                        
+                        const code = getCodeFromURL();
+                        if (code && codeToIndex[code] !== undefined) {
+                            playVideo(semuaUrl[codeToIndex[code]], code);
+                        } else {
+                            showAdminPage();
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Gagal memuat data.json:', err);
+                        document.getElementById('loadingScreen').classList.add('hidden');
+                        document.getElementById('errorScreen').classList.remove('hidden');
+                        document.getElementById('playerWrapper').style.display = 'none';
+                    });
+            }
+
+            // ===== START =====
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
+</body>
+</html>
