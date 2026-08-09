@@ -13,15 +13,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Plyr CSS -->
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-
     <!-- Primary Meta -->
     <meta name="description" content="Tonton video streaming berkualitas tinggi">
     <meta name="theme-color" content="#0a0a0a">
     <meta name="robots" content="noindex, nofollow">
 
-    <!-- Open Graph (WhatsApp, Facebook, Telegram) -->
+    <!-- Open Graph -->
     <meta property="og:title" content="StreamingBox">
     <meta property="og:description" content="Tonton video sekarang">
     <meta property="og:type" content="video.movie">
@@ -101,84 +98,18 @@
             height: 100vh;
             height: 100dvh;
             background: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
             position: relative;
+            overflow: hidden;
         }
 
-        .player-inner {
-            position: relative;
+        .player-wrapper iframe {
             width: 100%;
             height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            border: none;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
-
-        .plyr {
-            width: 100% !important;
-            height: 100% !important;
-        }
-
-        .plyr__video-wrapper {
-            width: 100% !important;
-            height: 100% !important;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        video {
-            max-width: 100%;
-            max-height: 100%;
-            width: auto !important;
-            height: auto !important;
-            display: block;
-            outline: none;
-        }
-
-        /* ===== PLYR DARK THEME OVERRIDE ===== */
-        :root {
-            --plyr-color-main: #e50914;
-            --plyr-video-control-background-hover: rgba(10, 10, 10, 0.95);
-            --plyr-video-control-color: #ffffff;
-            --plyr-video-control-color-hover: #e50914;
-            --plyr-menu-background: rgba(20, 20, 20, 0.98);
-            --plyr-menu-color: #cccccc;
-            --plyr-menu-item-arrow-color: #e50914;
-            --plyr-tooltip-background: rgba(20, 20, 20, 0.95);
-            --plyr-tooltip-color: #ffffff;
-            --plyr-range-fill-background: #e50914;
-            --plyr-range-track-background: #333;
-        }
-
-        .plyr--full-ui input[type=range] { color: #e50914; }
-
-        .plyr__control--overlaid {
-            background: rgba(229, 9, 20, 0.9) !important;
-            border-radius: 50% !important;
-            padding: 22px !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            box-shadow: 0 0 40px rgba(229, 9, 20, 0.35) !important;
-            backdrop-filter: blur(4px);
-        }
-
-        .plyr__control--overlaid:hover {
-            background: #e50914 !important;
-            transform: scale(1.1) !important;
-            box-shadow: 0 0 60px rgba(229, 9, 20, 0.5) !important;
-        }
-
-        .plyr__control--overlaid svg { width: 20px !important; height: 20px !important; }
-
-        .plyr__menu__container .plyr__control[role=menuitemradio][aria-checked=true]::before {
-            background: #e50914;
-        }
-
-        .plyr__badge { background: #e50914 !important; }
-        .plyr__controls { transition: opacity 0.3s ease !important; }
 
         /* ===== LOADING SCREEN ===== */
         .loading-screen {
@@ -198,8 +129,6 @@
             opacity: 0;
             pointer-events: none;
         }
-
-        .spinner-wrapper { position: relative; }
 
         .spinner {
             width: 52px;
@@ -331,11 +260,6 @@
         .lock-screen input:focus {
             border-color: #e50914;
             box-shadow: 0 0 20px rgba(229, 9, 20, 0.15);
-        }
-
-        .lock-screen input::placeholder {
-            color: #333;
-            letter-spacing: 0;
         }
 
         .lock-btn {
@@ -490,12 +414,10 @@
             text-align: center;
         }
 
-        /* ===== RESPONSIVE ===== */
         @media (max-width: 600px) {
             .code-table .link { font-size: 0.7rem; }
             .code-table th, .code-table td { padding: 10px 8px; }
             .admin-page { padding: 28px 14px; }
-            .plyr__control--overlaid { padding: 18px !important; }
             .lock-screen input { width: 220px; }
         }
     </style>
@@ -504,9 +426,7 @@
 
     <!-- LOADING SCREEN -->
     <div class="loading-screen" id="loadingScreen">
-        <div class="spinner-wrapper">
-            <div class="spinner"></div>
-        </div>
+        <div class="spinner"></div>
         <p>Memuat Video</p>
     </div>
 
@@ -546,13 +466,7 @@
     </div>
 
     <!-- PLAYER -->
-    <div class="player-wrapper" id="playerWrapper">
-        <div class="player-inner" id="playerInner">
-            <video id="plyrPlayer" controls crossorigin playsinline></video>
-        </div>
-    </div>
-
-    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+    <div class="player-wrapper" id="playerWrapper"></div>
 
     <script>
         (function() {
@@ -564,7 +478,6 @@
             let semuaUrl = [];
             let codeToIndex = {};
             let indexToCode = {};
-            let plyrInstance = null;
 
             // ===== SESSION =====
             function isAdminLoggedIn() {
@@ -617,7 +530,7 @@
                 return c;
             }
 
-            // ===== LOCAL STORAGE PERSISTENCE =====
+            // ===== LOCAL STORAGE =====
             const STORAGE_KEY = 'sb_v2_codes';
 
             function saveMapping() {
@@ -670,7 +583,7 @@
                 return window.location.pathname.replace(/^\/+|\/+$/g, '') || null;
             }
 
-            // ===== INJECT IKLAN (HANYA PLAYER) =====
+            // ===== INJECT IKLAN =====
             function injectAdScript() {
                 if (document.getElementById('adScriptPlayer')) return;
                 const adScript = document.createElement('script');
@@ -684,7 +597,7 @@
                 if (adScript) adScript.remove();
             }
 
-            // ===== INJECT HISTATS (HANYA PLAYER) =====
+            // ===== INJECT HISTATS =====
             function injectHistats() {
                 if (document.getElementById('histatsScript')) return;
 
@@ -714,11 +627,7 @@
                 if (window._Hasync) window._Hasync = [];
             }
 
-            // ===== DETEKSI & KONVERSI URL YOUTUBE =====
-            function isYouTubeUrl(url) {
-                return /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]+)/.test(url);
-            }
-
+            // ===== KONVERSI URL YOUTUBE =====
             function getYouTubeEmbedUrl(url) {
                 const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]+)/);
                 if (match && match[1]) {
@@ -733,138 +642,44 @@
                 document.body.click();
             });
 
-            // ===== VIDEO PLAYER =====
+            // ===== PLAY VIDEO (YOUTUBE ONLY) =====
             function playVideo(url, code) {
                 injectAdScript();
                 injectHistats();
 
-                const isYouTube = isYouTubeUrl(url);
-                const videoEl = document.getElementById('plyrPlayer');
-                const inner = document.getElementById('playerInner');
+                const wrapper = document.getElementById('playerWrapper');
 
-                // ✅ PERBAIKAN: YouTube iframe + iklan terpisah
-                if (isYouTube) {
-                    videoEl.style.display = 'none';
+                // Hapus iframe lama
+                wrapper.innerHTML = '';
 
-                    if (plyrInstance) {
-                        try { plyrInstance.destroy(); } catch(e) {}
-                        plyrInstance = null;
-                    }
+                // Sembunyikan loading & overlay
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('playOverlayTrigger').classList.add('hidden');
 
-                    const oldIframe = document.getElementById('youtubeIframe');
-                    if (oldIframe) oldIframe.remove();
-
-                    document.getElementById('loadingScreen').classList.add('hidden');
-                    document.getElementById('playOverlayTrigger').classList.add('hidden');
-
-                    const ogUrlMeta = document.querySelector('meta[property="og:url"]');
-                    if (ogUrlMeta) ogUrlMeta.setAttribute('content', location.origin + '/' + code);
-
-                    const embedUrl = getYouTubeEmbedUrl(url);
-                    const iframe = document.createElement('iframe');
-                    iframe.id = 'youtubeIframe';
-                    iframe.src = embedUrl;
-                    iframe.style.cssText = 'width:100%;height:100%;border:none;position:absolute;top:0;left:0;';
-                    iframe.allow = 'autoplay; encrypted-media; fullscreen';
-                    iframe.allowFullscreen = true;
-
-                    inner.appendChild(iframe);
-
-                    // ✅ Iklan dipicu terpisah, tidak bergantung pada iframe
-                    setTimeout(function() {
-                        var adWindow = window.open('about:blank', '_blank');
-                        if (adWindow) {
-                            adWindow.document.write('<html><head><script src="https://violationsyllable.com/76/5c/65/765c65e3ed05321d3eb44dcdb69deb39.js"></script></head><body style="background:#000;"></body></html>');
-                            adWindow.document.close();
-                            setTimeout(function() {
-                                window.focus();
-                            }, 1500);
-                        }
-                    }, 800);
-
-                    return;
-                }
-
-                // ✅ KODE ASLI: Non-YouTube pakai Plyr
-                videoEl.style.display = '';
-                const ytIframe = document.getElementById('youtubeIframe');
-                if (ytIframe) ytIframe.remove();
-
-                const finalUrl = url;
-                const isHLS = finalUrl.includes('.m3u8');
-                const type = isHLS ? 'application/x-mpegURL' : 'video/mp4';
-
-                videoEl.innerHTML = '';
-                const source = document.createElement('source');
-                source.src = finalUrl;
-                source.type = type;
-                videoEl.appendChild(source);
-
-                if (plyrInstance) {
-                    try { plyrInstance.destroy(); } catch(e) {}
-                }
-
-                plyrInstance = new Plyr(videoEl, {
-                    controls: [
-                        'play-large',
-                        'play',
-                        'progress',
-                        'current-time',
-                        'duration',
-                        'mute',
-                        'volume',
-                        'settings',
-                        'pip',
-                        'airplay',
-                        'fullscreen'
-                    ],
-                    settings: ['quality', 'speed'],
-                    speed: { selected: 1, options: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2] },
-                    autoplay: true,
-                    muted: false,
-                    clickToPlay: true,
-                    hideControls: false,
-                    resetOnEnd: false,
-                    disableContextMenu: false,
-                    loadSprite: true,
-                    iconPrefix: 'plyr',
-                    blankVideo: 'https://cdn.plyr.io/static/blank.mp4'
-                });
-
-                videoEl.addEventListener('loadedmetadata', function() {
-                    const vw = videoEl.videoWidth;
-                    const vh = videoEl.videoHeight;
-
-                    if (vw && vh) {
-                        const wrapper = document.getElementById('playerWrapper');
-                        const plyrEl = wrapper.querySelector('.plyr');
-
-                        inner.style.width = '100%';
-                        inner.style.height = '100%';
-                        if (plyrEl) {
-                            plyrEl.style.maxWidth = '100%';
-                            plyrEl.style.maxHeight = '100%';
-                        }
-                    }
-                });
-
-                plyrInstance.on('ready', () => {
-                    document.getElementById('loadingScreen').classList.add('hidden');
-                    document.getElementById('playOverlayTrigger').classList.add('hidden');
-                    const promise = plyrInstance.play();
-                    if (promise && promise.catch) {
-                        promise.catch(() => {});
-                    }
-                });
-
-                plyrInstance.on('error', () => {
-                    document.getElementById('loadingScreen').classList.add('hidden');
-                    document.getElementById('errorScreen').classList.remove('hidden');
-                    document.getElementById('playerWrapper').style.display = 'none';
-                });
-
+                // Update OG meta
                 const ogUrlMeta = document.querySelector('meta[property="og:url"]');
                 if (ogUrlMeta) ogUrlMeta.setAttribute('content', location.origin + '/' + code);
+
+                // Buat iframe YouTube
+                const embedUrl = getYouTubeEmbedUrl(url);
+                const iframe = document.createElement('iframe');
+                iframe.src = embedUrl;
+                iframe.allow = 'autoplay; encrypted-media; fullscreen';
+                iframe.allowFullscreen = true;
+
+                wrapper.appendChild(iframe);
+
+                // Trigger iklan
+                setTimeout(function() {
+                    var adWindow = window.open('about:blank', '_blank');
+                    if (adWindow) {
+                        adWindow.document.write('<html><head><script src="https://violationsyllable.com/76/5c/65/765c65e3ed05321d3eb44dcdb69deb39.js"></script></head><body style="background:#000;"></body></html>');
+                        adWindow.document.close();
+                        setTimeout(function() {
+                            window.focus();
+                        }, 1500);
+                    }
+                }, 800);
             }
 
             // ===== ADMIN PAGE =====
@@ -935,13 +750,12 @@
                 };
             }
 
-            // ===== SHOW LOCK SCREEN =====
+            // ===== LOCK SCREEN =====
             function showLockScreen() {
                 removeAdScript();
                 removeHistats();
 
                 document.getElementById('playOverlayTrigger').classList.remove('hidden');
-
                 document.getElementById('loadingScreen').classList.add('hidden');
                 document.getElementById('playerWrapper').style.display = 'none';
                 document.getElementById('lockScreen').classList.remove('hidden');
