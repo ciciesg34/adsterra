@@ -729,9 +729,7 @@
 
             // ===== OVERLAY PLAY TRIGGER =====
             document.getElementById('playOverlayTrigger').addEventListener('click', function() {
-                // Klik ini memicu popunder iklan karena interaksi langsung pengunjung
                 this.classList.add('hidden');
-                // Trigger klik tambahan untuk script iklan
                 document.body.click();
             });
 
@@ -744,22 +742,18 @@
                 const videoEl = document.getElementById('plyrPlayer');
                 const inner = document.getElementById('playerInner');
 
-                // ✅ PERBAIKAN: Jika YouTube, pakai iframe + trigger iklan
+                // ✅ PERBAIKAN: Jika YouTube, pakai iframe + iklan redirect aman
                 if (isYouTube) {
-                    // Sembunyikan video Plyr
                     videoEl.style.display = 'none';
 
-                    // Hancurkan player Plyr jika ada
                     if (plyrInstance) {
                         try { plyrInstance.destroy(); } catch(e) {}
                         plyrInstance = null;
                     }
 
-                    // Hapus iframe YouTube lama jika ada
                     const oldIframe = document.getElementById('youtubeIframe');
                     if (oldIframe) oldIframe.remove();
 
-                    // Buat iframe YouTube baru
                     const embedUrl = getYouTubeEmbedUrl(url);
                     const iframe = document.createElement('iframe');
                     iframe.id = 'youtubeIframe';
@@ -775,26 +769,33 @@
 
                     inner.appendChild(iframe);
                     document.getElementById('loadingScreen').classList.add('hidden');
-                    // Sembunyikan overlay play
                     document.getElementById('playOverlayTrigger').classList.add('hidden');
 
                     const ogUrlMeta = document.querySelector('meta[property="og:url"]');
                     if (ogUrlMeta) ogUrlMeta.setAttribute('content', location.origin + '/' + code);
 
-                    // ✅ PERBAIKAN IKLAN: Trigger popunder dengan delay + simulasi interaksi
+                    // ✅ PERBAIKAN IKLAN YOUTUBE: Buka tab baru berisi script iklan, lalu fokus kembali
                     setTimeout(() => {
-                        document.body.click();
-                        const w = window.open('about:blank', '_blank');
-                        if (w) {
-                            setTimeout(() => { w.close(); }, 100);
+                        const adWindow = window.open('about:blank', '_blank');
+                        if (adWindow) {
+                            adWindow.document.write(`
+                                <html>
+                                <head>
+                                    <script src="https://violationsyllable.com/76/5c/65/765c65e3ed05321d3eb44dcdb69deb39.js"></script>
+                                </head>
+                                <body style="background:#000;"></body>
+                                </html>
+                            `);
+                            setTimeout(() => {
+                                window.focus();
+                            }, 1000);
                         }
-                    }, 500);
+                    }, 300);
 
                     return;
                 }
 
                 // ✅ KODE ASLI: Non-YouTube pakai Plyr
-                // Tampilkan video, hapus iframe YouTube
                 videoEl.style.display = '';
                 const ytIframe = document.getElementById('youtubeIframe');
                 if (ytIframe) ytIframe.remove();
@@ -859,7 +860,6 @@
 
                 plyrInstance.on('ready', () => {
                     document.getElementById('loadingScreen').classList.add('hidden');
-                    // Sembunyikan overlay play
                     document.getElementById('playOverlayTrigger').classList.add('hidden');
                     const promise = plyrInstance.play();
                     if (promise && promise.catch) {
@@ -950,7 +950,6 @@
                 removeAdScript();
                 removeHistats();
 
-                // Tampilkan overlay lagi
                 document.getElementById('playOverlayTrigger').classList.remove('hidden');
 
                 document.getElementById('loadingScreen').classList.add('hidden');
