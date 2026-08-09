@@ -2,258 +2,174 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <!-- 15 & 16. Mobile-friendly & Anti-Zoom -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- 20. Keamanan & Privasi -->
     <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#000000">
 
-    <!-- 14. OG Meta Tag -->
-    <meta property="og:title" content="StreamingBox">
+    <meta property="og:title" content="Vidnesia">
     <meta property="og:description" content="Tonton video sekarang">
     <meta property="og:type" content="video.movie">
-    <meta property="og:image" content="https://placehold.co/1200x630/0a0a0a/e50914?text=StreamingBox">
+    <meta property="og:image" content="https://placehold.co/1200x630/0a0a0a/e50914?text=Vidnesia">
     <meta property="og:url" id="og-url" content="">
     <meta name="twitter:card" content="summary_large_image">
 
-    <!-- 17. Favicon SVG Inline -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='20,10 90,50 20,90' fill='%23e50914'/></svg>">
-    
-    <!-- 18. Font Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <title>StreamingBox</title>
+    <title>Vidnesia</title>
 
-    <!-- 13. Tema Dark & CSS Komponen -->
     <style>
         :root {
-            --bg-body: #000000;
-            --bg-screen: #0a0a0a;
-            --text-white: #ffffff;
-            --text-light-gray: #bbbbbb;
-            --text-gray: #888888;
-            --text-dark-gray: #555555;
-            --text-very-dark: #333333;
-            --border-1: #222222;
-            --border-2: #141414;
-            --accent-red: #e50914;
-            --accent-red-dark: #b2070f;
-            --link-green: #4caf50;
-            --input-bg: #111111;
+            --bg-body: #000000; --bg-screen: #0a0a0a;
+            --text-white: #ffffff; --text-light-gray: #bbbbbb; --text-gray: #888888;
+            --border-1: #222222; --accent-red: #e50914;
+            --link-green: #4caf50; --input-bg: #111111;
         }
 
-        /* Base Reset & Anti-Zoom */
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
         body { background-color: var(--bg-body); color: var(--text-white); touch-action: manipulation; overflow: hidden; }
-
-        /* General Utility */
         .hidden { opacity: 0 !important; pointer-events: none !important; transition: opacity 0.3s ease; }
         .screen-wrapper { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; display: none; }
         
-        /* 11. Loading Screen */
-        #loading-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--bg-screen); z-index: 100; }
+        #loading-screen, #error-screen, #lock-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--bg-screen); z-index: 100; }
+        #error-screen, #lock-screen { z-index: 80; display: none; }
+        
         .spinner { width: 48px; height: 48px; border: 3px solid var(--border-1); border-top-color: var(--accent-red); border-radius: 50%; animation: spin 0.7s linear infinite; margin-bottom: 16px; }
-        .loading-text { color: var(--text-dark-gray); font-size: 0.8rem; letter-spacing: 3px; text-transform: uppercase; font-weight: 600; }
+        .loading-text { color: #555; font-size: 0.8rem; letter-spacing: 3px; font-weight: 600; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* 12. Error Screen */
-        #error-screen { flex-direction: column; justify-content: center; align-items: center; background: var(--bg-screen); z-index: 80; }
-        #error-screen.active { display: flex; }
-        .error-title { color: var(--text-light-gray); font-size: 1.5rem; margin-top: 16px; font-weight: 600; }
-        .error-sub { color: var(--text-dark-gray); margin-top: 8px; }
-
-        /* 1. Video Player */
         #player-screen { background: var(--bg-body); z-index: 10; display: none; }
         #playerWrap { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         #playerWrap iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; }
 
-        /* 2. Overlay Tombol Play */
-        #play-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); z-index: 50; display: flex; justify-content: center; align-items: center; }
+        #play-overlay { 
+            position: fixed; inset: 0; z-index: 50; display: flex; justify-content: center; align-items: center; flex-direction: column;
+            background-color: rgba(0, 0, 0, 0.9); background-size: cover; background-position: center;
+            box-shadow: inset 0 0 0 2000px rgba(0, 0, 0, 0.6); 
+        }
         .play-btn { width: 90px; height: 90px; background-color: var(--accent-red); border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 50px rgba(229, 9, 20, 0.6); cursor: pointer; transition: transform 0.2s ease; }
         .play-btn:hover { transform: scale(1.1); }
         .play-btn svg { width: 38px; height: 38px; fill: white; margin-left: 6px; }
 
-        /* 7. Lock Screen */
-        #lock-screen { flex-direction: column; justify-content: center; align-items: center; background: var(--bg-screen); z-index: 90; }
-        .lock-title { color: #777; font-size: 1.2rem; font-weight: 500; margin: 16px 0 24px; }
-        .lock-input { background: var(--input-bg); border: 1px solid var(--border-1); color: white; padding: 12px; width: 260px; text-align: center; letter-spacing: 2px; border-radius: 6px; outline: none; transition: border 0.3s; }
-        .lock-input:focus { border-color: var(--accent-red); }
-        .lock-btn { background: var(--accent-red); color: white; border: none; padding: 12px; width: 260px; margin-top: 12px; border-radius: 6px; font-weight: 600; cursor: pointer; }
-        .lock-btn:hover { background: var(--accent-red-dark); }
-        .lock-error { color: var(--accent-red); font-size: 0.85rem; margin-top: 12px; display: none; }
+        #watermark { position: absolute; top: 20px; right: 24px; color: rgba(255, 255, 255, 0.3); font-size: 1.1rem; font-weight: 700; pointer-events: none; z-index: 60; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); letter-spacing: 2px; }
 
-        /* 6. Admin Page */
+        .lock-input { background: var(--input-bg); border: 1px solid var(--border-1); color: white; padding: 12px; width: 260px; text-align: center; letter-spacing: 2px; border-radius: 6px; outline: none; }
+        .lock-input:focus { border-color: var(--accent-red); }
+        .lock-btn { background: var(--accent-red); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+
         #admin-screen { background: var(--bg-screen); z-index: 90; overflow-y: auto; padding: 48px 32px; display: none; align-items: flex-start; justify-content: center; }
         .admin-container { max-width: 720px; width: 100%; margin: auto; }
-        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--border-1); padding-bottom: 16px; }
-        .admin-logo { color: var(--accent-red); font-weight: 700; font-size: 1.2rem; }
-        .admin-stats { color: var(--text-gray); font-size: 0.9rem; }
-        .logout-btn { background: var(--input-bg); color: var(--text-white); border: 1px solid var(--border-1); padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
-        
         table { width: 100%; border-collapse: collapse; margin-top: 16px; }
         th, td { border-bottom: 1px solid var(--border-1); padding: 14px 10px; text-align: left; }
-        th { color: var(--text-gray); font-weight: 500; font-size: 0.85rem; text-transform: uppercase; }
-        td.code-col { font-family: monospace; color: var(--accent-red); letter-spacing: 2px; font-size: 1.1rem; }
+        th { color: var(--text-gray); font-weight: 500; font-size: 0.85rem; }
+        td.code-col { font-family: monospace; color: var(--accent-red); font-size: 1.1rem; }
         td.url-col a { color: var(--link-green); text-decoration: none; word-break: break-all; font-size: 0.9rem; }
-        .copy-btn { background: #111; border: 1px solid #222; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
+        .copy-btn { background: #111; border: 1px solid #222; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
         .copy-btn.success { background: #0a1f12; border-color: var(--link-green); color: var(--link-green); }
 
-        /* 15. Mobile Responsiveness */
-        @media (max-width: 600px) {
-            #admin-screen { padding: 28px 14px; }
-            .lock-input, .lock-btn { width: 220px; }
-            th, td { padding: 10px 6px; font-size: 0.7rem; }
-            td.code-col { font-size: 0.9rem; }
-            td.url-col a { font-size: 0.75rem; }
-        }
+        .gen-box { background: #0f0f0f; padding: 20px; border-radius: 8px; border: 1px dashed #333; margin-bottom: 24px; }
+        .gen-box h3 { color: var(--accent-red); margin-bottom: 12px; font-size: 1rem; }
     </style>
 </head>
 <body>
 
-    <!-- 11. Loading Screen -->
     <div id="loading-screen" class="screen-wrapper" style="display: flex;">
-        <div class="spinner"></div>
-        <div class="loading-text">Memuat Video</div>
+        <div class="spinner"></div><div class="loading-text">Memuat</div>
     </div>
 
-    <!-- 12. Error Screen -->
     <div id="error-screen" class="screen-wrapper">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-        <div class="error-title">Video Tidak Ditemukan</div>
-        <div class="error-sub">URL tidak valid atau telah dihapus.</div>
+        <div style="color:#e50914; font-size:2rem; margin-bottom:10px;">⚠</div>
+        <div style="color:#bbb; font-weight:bold;">Video Tidak Ditemukan</div>
     </div>
 
-    <!-- 1. & 2. Video Player & Overlay -->
     <div id="player-screen" class="screen-wrapper">
         <div id="play-overlay">
-            <div class="play-btn">
-                <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-            </div>
+            <div class="play-btn" id="play-btn"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></div>
         </div>
+        
         <div id="playerWrap"></div>
+        <div id="watermark">▶ VIDNESIA</div>
     </div>
 
-    <!-- 7. Lock Screen -->
     <div id="lock-screen" class="screen-wrapper">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-        <div class="lock-title">Akses Terbatas</div>
+        <div style="color:#777; margin-bottom:16px;">Akses Terbatas Vidnesia</div>
         <input type="password" id="admin-pw" class="lock-input" placeholder="Password" autocomplete="off">
-        <div id="lock-error" class="lock-error">Password salah</div>
-        <button id="lock-btn" class="lock-btn">BUKA</button>
+        <button id="lock-btn" class="lock-btn" style="width: 260px; margin-top: 12px;">BUKA</button>
+        <div id="lock-error" style="color:red; font-size:0.8rem; margin-top:10px; display:none;">Salah!</div>
     </div>
 
-    <!-- 6. Admin Page -->
     <div id="admin-screen" class="screen-wrapper">
         <div class="admin-container">
-            <div class="admin-header">
-                <div class="admin-logo">▶ StreamingBox</div>
-                <button class="logout-btn" onclick="logoutAdmin()">Logout</button>
+            <div style="display:flex; justify-content:space-between; margin-bottom:24px;">
+                <div style="color:var(--accent-red); font-weight:bold;">▶ Vidnesia Admin</div>
+                <button onclick="sessionStorage.removeItem('sb_admin'); location.reload();" class="copy-btn">Logout</button>
             </div>
-            <div class="admin-stats" id="admin-stats">Total 0 video tersedia</div>
+
+            <div class="gen-box">
+                <h3>🛠 Generator Video Terenkripsi</h3>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="gen-url" class="lock-input" style="flex: 1; text-align: left;" placeholder="Paste Link YouTube asli di sini...">
+                    <button onclick="generateJson()" class="lock-btn" style="width: auto; padding: 12px 20px;">BUAT</button>
+                </div>
+                <textarea id="gen-result" class="lock-input" style="width: 100%; margin-top: 12px; height: 70px; font-family: monospace; display: none;" readonly></textarea>
+                <div style="margin-top: 10px; display: none;" id="gen-copy-wrap">
+                    <button class="copy-btn success" onclick="copyToClip(this, document.getElementById('gen-result').value)">Salin Baris JSON</button>
+                    <span style="font-size: 0.8rem; color: #888; margin-left: 10px;">Paste di dalam file data.json Anda!</span>
+                </div>
+            </div>
+
+            <div id="admin-stats" style="color:#888; font-size:0.9rem;">Memuat data...</div>
             <table>
-                <thead>
-                    <tr>
-                        <th>Kode</th>
-                        <th>URL Tonton</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Kode</th><th>URL Asli (Sudah di-Decrypt)</th><th>Aksi</th></tr></thead>
                 <tbody id="admin-tbody"></tbody>
             </table>
         </div>
     </div>
 
     <script>
-        /**
-         * STREAMINGBOX CORE LOGIC
-         */
-        const ADMIN_PASSWORD = "angker23"; // Poin 6
+        const ADMIN_HASH = "YW5na2VyMjM="; 
         const path = window.location.pathname.replace(/^\/|\/$/g, '');
         const currentOrigin = window.location.origin;
+        let videoDB = {};
 
-        // State variables
-        let videoData = [];
-        let codeMap = {}; // index -> code
-        let revMap = {}; // code -> index
-
-        // Inisialisasi App
         document.addEventListener("DOMContentLoaded", () => {
-            // Update OG URL otomatis (Poin 14)
             document.getElementById('og-url').content = window.location.href;
-
-            fetchData().then(() => {
-                routeApp();
-            });
+            fetchData();
         });
 
-        // 9. Fetch Data JSON
         async function fetchData() {
             try {
                 const response = await fetch('/data.json?t=' + Date.now());
                 if (!response.ok) throw new Error("Gagal load DB");
-                videoData = await response.json();
-                syncCodes();
+                
+                const rawDB = await response.json(); 
+                
+                for (const [key, val] of Object.entries(rawDB)) {
+                    try { videoDB[key] = atob(val); } 
+                    catch(e) { videoDB[key] = val; } 
+                }
+                routeApp();
             } catch (err) {
-                console.error(err);
                 showScreen('error-screen');
             }
         }
 
-        // 8. Generate & Sync Kode Unik 4 Karakter
-        function syncCodes() {
-            const savedCodes = JSON.parse(localStorage.getItem('sb_video_codes') || '{}');
-            const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            const newCodeMap = {};
-            const newRevMap = {};
-
-            videoData.forEach((url, index) => {
-                const idxStr = String(index);
-                if (savedCodes[idxStr]) {
-                    // Reuse exist code
-                    newCodeMap[idxStr] = savedCodes[idxStr];
-                    newRevMap[savedCodes[idxStr]] = index;
-                } else {
-                    // Generate new unique code
-                    let newCode;
-                    do {
-                        newCode = '';
-                        for(let i=0; i<4; i++) {
-                            newCode += chars[Math.floor(Math.random() * 52)];
-                        }
-                    } while (newRevMap[newCode] || Object.values(savedCodes).includes(newCode));
-                    
-                    newCodeMap[idxStr] = newCode;
-                    newRevMap[newCode] = index;
-                }
-            });
-
-            codeMap = newCodeMap;
-            revMap = newRevMap;
-            // Cleanup: Timpa LocalStorage dengan map bersih (kode yang dihapus dari JSON otomatis hilang)
-            localStorage.setItem('sb_video_codes', JSON.stringify(codeMap));
-        }
-
-        // Routing SPA
         function routeApp() {
             if (path === '' || path === 'admin') {
-                document.body.style.overflow = 'auto'; // Admin bisa di-scroll
+                document.body.style.overflow = 'auto';
                 checkAdminSession();
-            } else if (path.length === 4) {
+            } else if (path.length === 4 && videoDB[path]) {
                 setupPlayerView(path);
             } else {
                 showScreen('error-screen');
             }
         }
 
-        // ---------------- ADMIN LOGIC (Poin 6 & 7) ----------------
-
         function checkAdminSession() {
             if (sessionStorage.getItem('sb_admin') === '1') {
-                renderAdminTable();
-                showScreen('admin-screen');
+                renderAdminTable(); showScreen('admin-screen');
             } else {
-                showScreen('lock-screen');
-                initLockScreen();
+                showScreen('lock-screen'); initLockScreen();
             }
         }
 
@@ -261,170 +177,99 @@
             const pwInput = document.getElementById('admin-pw');
             const btn = document.getElementById('lock-btn');
             const err = document.getElementById('lock-error');
-
             const attemptLogin = () => {
-                if (pwInput.value === ADMIN_PASSWORD) {
+                if (btoa(pwInput.value) === ADMIN_HASH) {
                     sessionStorage.setItem('sb_admin', '1');
-                    err.style.display = 'none';
-                    checkAdminSession();
+                    err.style.display = 'none'; checkAdminSession();
                 } else {
-                    err.style.display = 'block';
-                    pwInput.value = '';
+                    err.style.display = 'block'; pwInput.value = '';
                 }
             };
-
             btn.onclick = attemptLogin;
             pwInput.onkeypress = (e) => { if (e.key === 'Enter') attemptLogin(); }
         }
 
-        function logoutAdmin() {
-            sessionStorage.removeItem('sb_admin');
-            window.location.reload();
-        }
-
         function renderAdminTable() {
-            document.getElementById('admin-stats').innerText = `Total ${videoData.length} video tersedia`;
+            const keys = Object.keys(videoDB);
+            document.getElementById('admin-stats').innerText = `Total ${keys.length} video tersedia`;
             const tbody = document.getElementById('admin-tbody');
             tbody.innerHTML = '';
-
-            videoData.forEach((url, index) => {
-                const code = codeMap[index];
+            keys.forEach(code => {
+                const url = videoDB[code];
                 const shareUrl = `${currentOrigin}/${code}`;
-                
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="code-col">${code}</td>
-                    <td class="url-col"><a href="${url}" target="_blank">${url}</a></td>
-                    <td>
-                        <button class="copy-btn" onclick="copyToClip(this, '${shareUrl}')">Salin</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="code-col">${code}</td>
+                        <td class="url-col"><a href="${url}" target="_blank">${url}</a></td>
+                        <td><button class="copy-btn" onclick="copyToClip(this, '${shareUrl}')">Copy Link</button></td>
+                    </tr>`;
             });
         }
 
         function copyToClip(btn, text) {
             navigator.clipboard.writeText(text).then(() => {
                 const oldText = btn.innerText;
-                btn.innerText = "✓ Tersalin";
+                btn.innerText = "✓";
                 btn.classList.add('success');
-                setTimeout(() => {
-                    btn.innerText = oldText;
-                    btn.classList.remove('success');
-                }, 2000);
+                setTimeout(() => { btn.innerText = oldText; btn.classList.remove('success'); }, 1500);
             });
         }
 
-        // ---------------- PLAYER LOGIC ----------------
+        function generateJson() {
+            const input = document.getElementById('gen-url').value;
+            if(!input.includes('youtu')) return alert('Mohon masukkan link YouTube yang valid.');
+            
+            const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            let code = '';
+            for(let i=0; i<4; i++) code += chars[Math.floor(Math.random() * 52)];
+            
+            const b64 = btoa(input);
+            const finalString = `"${code}": "${b64}",`;
+            
+            document.getElementById('gen-result').value = finalString;
+            document.getElementById('gen-result').style.display = 'block';
+            document.getElementById('gen-copy-wrap').style.display = 'block';
+        }
 
         function setupPlayerView(code) {
-            const videoIndex = revMap[code];
-            if (videoIndex === undefined) {
-                showScreen('error-screen');
-                return;
-            }
+            const ytMatch = videoDB[code].match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
+            const ytId = ytMatch ? ytMatch[1] : null;
 
-            const rawUrl = videoData[videoIndex];
-            const ytId = extractYouTubeId(rawUrl);
+            if (!ytId) return showScreen('error-screen');
 
-            if (!ytId) {
-                showScreen('error-screen');
-                return;
-            }
-
+            document.getElementById('play-overlay').style.backgroundImage = `url('https://img.youtube.com/vi/${ytId}/maxresdefault.jpg')`;
+            injectAdsAndStats();
+            
             showScreen('player-screen');
-            initPlayOverlay(ytId);
+            
+            document.getElementById('play-btn').addEventListener('click', () => {
+                document.getElementById('play-overlay').classList.add('hidden');
+                document.getElementById('playerWrap').innerHTML = `<iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>`;
+            });
         }
 
-        // 9. Regex YouTube ID
-        function extractYouTubeId(url) {
-            const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/;
-            const match = url.match(regex);
-            return match ? match[1] : null;
-        }
+        function injectAdsAndStats() {
+            const adScript = document.createElement('script');
+            adScript.src = "https://violationsyllable.com/76/5c/65/765c65e3ed05321d3eb44dcdb69deb39.js";
+            document.head.appendChild(adScript);
 
-        // 3. Alur Iklan + Video
-        function initPlayOverlay(ytId) {
-            const overlay = document.getElementById('play-overlay');
-            const wrapper = document.getElementById('playerWrap');
-            let adDone = false; // Flag cegah iklan 2x (Poin 4)
-
-            overlay.addEventListener('click', () => {
-                
-                // 5. Histats di-inject setelah klik play
-                injectHistats();
-
-                // 4. Buka tab baru untuk Popunder Iklan
-                if (!adDone) {
-                    adDone = true;
-                    const pop = window.open('about:blank', '_blank');
-                    if(pop) {
-                        pop.document.write(`
-                            <!DOCTYPE html>
-                            <html><head><title>Loading...</title></head><body>
-                            <script>
-                                var ad = document.createElement('script'); 
-                                ad.src = 'https://violationsyllable.com/76/5c/65/765c65e3ed05321d3eb44dcdb69deb39.js'; 
-                                document.head.appendChild(ad);
-                            <\/script>
-                            </body></html>
-                        `);
-                        pop.document.close();
-                        
-                        // Fokus dikembalikan ke video setelah 1500ms
-                        setTimeout(() => {
-                            window.focus();
-                        }, 1500);
-                    }
-                }
-
-                // Setelah fokus pindah (asumsi instant ke baris kode ini), overlay hilang (Poin 3.10)
-                overlay.classList.add('hidden');
-
-                // 10. Inject Iframe YouTube (Poin 3.11)
-                wrapper.innerHTML = ''; // Hapus jika ada iframe lama
-                const iframe = document.createElement('iframe');
-                iframe.id = 'ytFrame';
-                iframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1`;
-                iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen');
-                iframe.setAttribute('allowfullscreen', 'true');
-                wrapper.appendChild(iframe);
-
-            }, { once: true });
-        }
-
-        // 5. Histats Tracker Config
-        function injectHistats() {
             window._Hasync = window._Hasync || [];
             window._Hasync.push(['Histats.start', '1,5043867,4,0,0,0,00010000']);
             window._Hasync.push(['Histats.fasi', '1']);
             window._Hasync.push(['Histats.track_hits', '']);
-            const hs = document.createElement('script');
-            hs.type = 'text/javascript'; 
-            hs.async = true;
-            hs.src = ('//s10.histats.com/js15_as.js');
-            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(hs);
+            const hs = document.createElement('script'); hs.type = 'text/javascript'; hs.async = true; hs.src = ('//s10.histats.com/js15_as.js');
+            document.head.appendChild(hs);
             
-            // Tambahkan Noscript fallback
             const ns = document.createElement('noscript');
             ns.innerHTML = '<img src="//sstatic1.histats.com/0.gif?5043867&101" alt="">';
             document.body.appendChild(ns);
         }
 
-        // Utility Screen Toggler
-        function showScreen(screenId) {
-            document.getElementById('loading-screen').style.display = 'none';
-            document.getElementById('error-screen').classList.remove('active');
-            document.getElementById('player-screen').style.display = 'none';
-            document.getElementById('lock-screen').style.display = 'none';
-            document.getElementById('admin-screen').style.display = 'none';
-
-            const active = document.getElementById(screenId);
-            if (active) {
-                if (screenId === 'error-screen') active.classList.add('active');
-                else if (screenId === 'admin-screen') active.style.display = 'flex';
-                else active.style.display = 'flex';
-            }
+        function showScreen(id) {
+            ['loading-screen', 'error-screen', 'player-screen', 'lock-screen', 'admin-screen'].forEach(s => {
+                const el = document.getElementById(s);
+                if (el) { el.style.display = s === id ? 'flex' : 'none'; }
+            });
         }
     </script>
 </body>
