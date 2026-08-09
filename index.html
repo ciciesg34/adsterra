@@ -686,7 +686,7 @@
                 const videoEl = document.getElementById('plyrPlayer');
                 const inner = document.getElementById('playerInner');
 
-                // ✅ PERBAIKAN: Jika YouTube, pakai iframe
+                // ✅ PERBAIKAN: Jika YouTube, pakai iframe + trigger iklan
                 if (isYouTube) {
                     // Sembunyikan video Plyr
                     videoEl.style.display = 'none';
@@ -720,6 +720,17 @@
 
                     const ogUrlMeta = document.querySelector('meta[property="og:url"]');
                     if (ogUrlMeta) ogUrlMeta.setAttribute('content', location.origin + '/' + code);
+
+                    // ✅ PERBAIKAN IKLAN: Trigger popunder dengan delay + simulasi interaksi
+                    setTimeout(() => {
+                        // Simulasi klik pada body untuk mengaktifkan popunder
+                        document.body.click();
+                        // Trigger window.open untuk memicu popunder
+                        const w = window.open('about:blank', '_blank');
+                        if (w) {
+                            setTimeout(() => { w.close(); }, 100);
+                        }
+                    }, 500);
 
                     return;
                 }
