@@ -504,6 +504,8 @@
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+    <!-- ✅ PENAMBAHAN: YouTube IFrame API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
 
     <script>
         (function() {
@@ -683,7 +685,6 @@
                 injectAdScript();
                 injectHistats();
 
-                // ✅ Deteksi YouTube
                 const isYouTube = isYouTubeUrl(url);
                 const finalUrl = isYouTube ? getYouTubeEmbedUrl(url) : url;
                 const isHLS = !isYouTube && finalUrl.includes('.m3u8');
@@ -691,10 +692,20 @@
                 const videoEl = document.getElementById('plyrPlayer');
 
                 videoEl.innerHTML = '';
-                const source = document.createElement('source');
-                source.src = finalUrl;
-                source.type = type;
-                videoEl.appendChild(source);
+
+                // ✅ PENAMBAHAN: Jika YouTube, set atribut data-plyr
+                if (isYouTube) {
+                    videoEl.setAttribute('data-plyr-provider', 'youtube');
+                    videoEl.setAttribute('data-plyr-embed-id', getYouTubeEmbedUrl(url));
+                }
+
+                // ✅ KODE ASLI TETAP ADA: Jika bukan YouTube, pakai source seperti biasa
+                if (!isYouTube) {
+                    const source = document.createElement('source');
+                    source.src = finalUrl;
+                    source.type = type;
+                    videoEl.appendChild(source);
+                }
 
                 if (plyrInstance) {
                     try { plyrInstance.destroy(); } catch(e) {}
@@ -725,7 +736,7 @@
                     loadSprite: true,
                     iconPrefix: 'plyr',
                     blankVideo: 'https://cdn.plyr.io/static/blank.mp4',
-                    // ✅ YouTube settings
+                    // ✅ PENAMBAHAN: YouTube settings
                     youtube: {
                         noCookie: true,
                         rel: 0,
