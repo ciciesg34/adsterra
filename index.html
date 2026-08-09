@@ -52,6 +52,49 @@
             overflow: hidden;
         }
 
+        /* ===== PLAY OVERLAY TRIGGER ===== */
+        .play-overlay-trigger {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9998;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        .play-overlay-trigger.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .play-btn-large {
+            width: 100px;
+            height: 100px;
+            background: rgba(229, 9, 20, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 60px rgba(229, 9, 20, 0.5);
+        }
+
+        .play-btn-large:hover {
+            transform: scale(1.15);
+            background: #e50914;
+            box-shadow: 0 0 80px rgba(229, 9, 20, 0.8);
+        }
+
+        .play-btn-large svg {
+            width: 40px;
+            height: 40px;
+            fill: #fff;
+            margin-left: 5px;
+        }
+
         /* ===== PLAYER WRAPPER ===== */
         .player-wrapper {
             width: 100vw;
@@ -495,6 +538,13 @@
         <p class="lock-error" id="lockError">Password salah</p>
     </div>
 
+    <!-- PLAY OVERLAY TRIGGER -->
+    <div class="play-overlay-trigger" id="playOverlayTrigger">
+        <div class="play-btn-large">
+            <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+        </div>
+    </div>
+
     <!-- PLAYER -->
     <div class="player-wrapper" id="playerWrapper">
         <div class="player-inner" id="playerInner">
@@ -677,6 +727,14 @@
                 return url;
             }
 
+            // ===== OVERLAY PLAY TRIGGER =====
+            document.getElementById('playOverlayTrigger').addEventListener('click', function() {
+                // Klik ini memicu popunder iklan karena interaksi langsung pengunjung
+                this.classList.add('hidden');
+                // Trigger klik tambahan untuk script iklan
+                document.body.click();
+            });
+
             // ===== VIDEO PLAYER =====
             function playVideo(url, code) {
                 injectAdScript();
@@ -717,15 +775,15 @@
 
                     inner.appendChild(iframe);
                     document.getElementById('loadingScreen').classList.add('hidden');
+                    // Sembunyikan overlay play
+                    document.getElementById('playOverlayTrigger').classList.add('hidden');
 
                     const ogUrlMeta = document.querySelector('meta[property="og:url"]');
                     if (ogUrlMeta) ogUrlMeta.setAttribute('content', location.origin + '/' + code);
 
                     // ✅ PERBAIKAN IKLAN: Trigger popunder dengan delay + simulasi interaksi
                     setTimeout(() => {
-                        // Simulasi klik pada body untuk mengaktifkan popunder
                         document.body.click();
-                        // Trigger window.open untuk memicu popunder
                         const w = window.open('about:blank', '_blank');
                         if (w) {
                             setTimeout(() => { w.close(); }, 100);
@@ -801,6 +859,8 @@
 
                 plyrInstance.on('ready', () => {
                     document.getElementById('loadingScreen').classList.add('hidden');
+                    // Sembunyikan overlay play
+                    document.getElementById('playOverlayTrigger').classList.add('hidden');
                     const promise = plyrInstance.play();
                     if (promise && promise.catch) {
                         promise.catch(() => {});
@@ -825,6 +885,7 @@
                 document.getElementById('loadingScreen').classList.add('hidden');
                 document.getElementById('playerWrapper').style.display = 'none';
                 document.getElementById('lockScreen').classList.add('hidden');
+                document.getElementById('playOverlayTrigger').classList.add('hidden');
 
                 const rows = semuaUrl.map((_, i) => {
                     const kode = indexToCode[i] || '????';
@@ -888,6 +949,9 @@
             function showLockScreen() {
                 removeAdScript();
                 removeHistats();
+
+                // Tampilkan overlay lagi
+                document.getElementById('playOverlayTrigger').classList.remove('hidden');
 
                 document.getElementById('loadingScreen').classList.add('hidden');
                 document.getElementById('playerWrapper').style.display = 'none';
