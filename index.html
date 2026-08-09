@@ -13,24 +13,17 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Plyr CSS -->
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-
     <!-- Primary Meta -->
     <meta name="description" content="Tonton video streaming berkualitas tinggi">
     <meta name="theme-color" content="#0a0a0a">
     <meta name="robots" content="noindex, nofollow">
 
-    <!-- Open Graph (WhatsApp, Facebook, Telegram) -->
+    <!-- Open Graph -->
     <meta property="og:title" content="StreamingBox">
     <meta property="og:description" content="Tonton video sekarang">
     <meta property="og:type" content="video.movie">
     <meta property="og:image" content="https://placehold.co/1200x630/0a0a0a/e50914?text=StreamingBox&font=Inter">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
     <meta property="og:url" content="">
-    <meta property="og:site_name" content="StreamingBox">
-    <meta property="og:locale" content="id_ID">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
@@ -39,88 +32,26 @@
     <meta name="twitter:image" content="https://placehold.co/1200x630/0a0a0a/e50914?text=StreamingBox&font=Inter">
 
     <style>
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background: #0a0a0a;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            min-height: 100dvh;
-            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-            overflow: hidden;
-        }
-
-        /* ===== PLAY OVERLAY ===== */
-        .play-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.9);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-        .play-overlay.hidden { display: none; }
-        .play-btn {
-            width: 80px;
-            height: 80px;
-            background: #e50914;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 40px rgba(229,9,20,0.6);
-        }
-        .play-btn svg { width: 36px; height: 36px; fill: #fff; margin-left: 4px; }
-
-        /* ===== PLAYER WRAPPER ===== */
-        .player-wrapper {
+            background: #000;
             width: 100vw;
             height: 100vh;
             height: 100dvh;
-            background: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             overflow: hidden;
-            position: relative;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
         }
 
-        .player-inner {
-            position: relative;
+        /* ===== PLAYER ===== */
+        .player-container {
             width: 100%;
             height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: relative;
+            background: #000;
         }
 
-        .plyr {
-            width: 100% !important;
-            height: 100% !important;
-        }
-
-        .plyr__video-wrapper {
-            width: 100% !important;
-            height: 100% !important;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        video {
-            max-width: 100%;
-            max-height: 100%;
-            width: auto !important;
-            height: auto !important;
-            display: block;
-            outline: none;
-        }
-
-        iframe.youtube-embed {
+        .player-container iframe {
             width: 100%;
             height: 100%;
             border: none;
@@ -129,71 +60,59 @@
             left: 0;
         }
 
-        /* ===== PLYR DARK THEME OVERRIDE ===== */
-        :root {
-            --plyr-color-main: #e50914;
-            --plyr-video-control-background-hover: rgba(10, 10, 10, 0.95);
-            --plyr-video-control-color: #ffffff;
-            --plyr-video-control-color-hover: #e50914;
-            --plyr-menu-background: rgba(20, 20, 20, 0.98);
-            --plyr-menu-color: #cccccc;
-            --plyr-menu-item-arrow-color: #e50914;
-            --plyr-tooltip-background: rgba(20, 20, 20, 0.95);
-            --plyr-tooltip-color: #ffffff;
-            --plyr-range-fill-background: #e50914;
-            --plyr-range-track-background: #333;
-        }
-
-        .plyr--full-ui input[type=range] { color: #e50914; }
-
-        .plyr__control--overlaid {
-            background: rgba(229, 9, 20, 0.9) !important;
-            border-radius: 50% !important;
-            padding: 22px !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            box-shadow: 0 0 40px rgba(229, 9, 20, 0.35) !important;
-            backdrop-filter: blur(4px);
-        }
-
-        .plyr__control--overlaid:hover {
-            background: #e50914 !important;
-            transform: scale(1.1) !important;
-            box-shadow: 0 0 60px rgba(229, 9, 20, 0.5) !important;
-        }
-
-        .plyr__control--overlaid svg { width: 20px !important; height: 20px !important; }
-
-        .plyr__menu__container .plyr__control[role=menuitemradio][aria-checked=true]::before {
-            background: #e50914;
-        }
-
-        .plyr__badge { background: #e50914 !important; }
-        .plyr__controls { transition: opacity 0.3s ease !important; }
-
-        /* ===== LOADING SCREEN ===== */
-        .loading-screen {
+        /* ===== PLAY OVERLAY ===== */
+        .play-overlay {
             position: fixed;
             inset: 0;
+            background: rgba(0,0,0,0.88);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .play-overlay.hidden { display: none; }
+
+        .play-button {
+            width: 90px;
+            height: 90px;
+            background: #e50914;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 50px rgba(229,9,20,0.6);
+            transition: transform 0.2s;
+        }
+
+        .play-button:hover { transform: scale(1.1); }
+
+        .play-button svg {
+            width: 38px;
+            height: 38px;
+            fill: #fff;
+            margin-left: 5px;
+        }
+
+        /* ===== LOADING ===== */
+        .loading {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 200;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: #0a0a0a;
-            z-index: 9999;
-            gap: 24px;
-            transition: opacity 0.5s ease;
+            gap: 20px;
         }
 
-        .loading-screen.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .spinner-wrapper { position: relative; }
+        .loading.hidden { display: none; }
 
         .spinner {
-            width: 52px;
-            height: 52px;
+            width: 48px;
+            height: 48px;
             border: 3px solid #1a1a1a;
             border-top-color: #e50914;
             border-radius: 50%;
@@ -202,106 +121,65 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .loading-screen p {
+        .loading p {
             color: #444;
             font-size: 0.8rem;
             letter-spacing: 3px;
             text-transform: uppercase;
-            font-weight: 500;
-            animation: pulse 2s ease-in-out infinite;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 1; }
-        }
-
-        /* ===== ERROR SCREEN ===== */
-        .error-screen {
+        /* ===== ERROR ===== */
+        .error-page {
             position: fixed;
             inset: 0;
+            background: #000;
+            z-index: 300;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: #0a0a0a;
-            z-index: 9999;
-            gap: 12px;
+            gap: 16px;
             color: #fff;
         }
 
-        .error-screen.hidden { display: none; }
+        .error-page.hidden { display: none; }
 
-        .error-icon {
-            width: 88px;
-            height: 88px;
-            border-radius: 50%;
-            background: rgba(229, 9, 20, 0.08);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 12px;
-        }
-
-        .error-icon svg {
-            width: 40px;
-            height: 40px;
+        .error-page svg {
+            width: 48px;
+            height: 48px;
             stroke: #e50914;
             fill: none;
             stroke-width: 1.5;
         }
 
-        .error-screen h2 {
-            font-weight: 500;
-            font-size: 1.1rem;
-            color: #bbb;
-        }
-
-        .error-screen span {
-            font-size: 0.8rem;
-            color: #444;
-        }
+        .error-page h2 { color: #bbb; font-weight: 500; font-size: 1.1rem; }
+        .error-page span { color: #444; font-size: 0.8rem; }
 
         /* ===== LOCK SCREEN ===== */
         .lock-screen {
             position: fixed;
             inset: 0;
+            background: #0a0a0a;
+            z-index: 400;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: #0a0a0a;
-            z-index: 9999;
             gap: 20px;
             color: #fff;
         }
 
         .lock-screen.hidden { display: none; }
 
-        .lock-icon {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.03);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 8px;
-        }
-
-        .lock-icon svg {
-            width: 36px;
-            height: 36px;
+        .lock-screen svg {
+            width: 40px;
+            height: 40px;
             stroke: #555;
             fill: none;
             stroke-width: 1.5;
         }
 
-        .lock-screen h2 {
-            font-weight: 500;
-            font-size: 1rem;
-            color: #666;
-        }
+        .lock-screen h2 { color: #666; font-weight: 500; font-size: 1rem; }
 
         .lock-screen input {
             background: #111;
@@ -313,22 +191,13 @@
             text-align: center;
             width: 260px;
             outline: none;
-            transition: 0.3s;
             font-family: 'Inter', sans-serif;
             letter-spacing: 2px;
         }
 
-        .lock-screen input:focus {
-            border-color: #e50914;
-            box-shadow: 0 0 20px rgba(229, 9, 20, 0.15);
-        }
+        .lock-screen input:focus { border-color: #e50914; }
 
-        .lock-screen input::placeholder {
-            color: #333;
-            letter-spacing: 0;
-        }
-
-        .lock-btn {
+        .lock-screen button {
             background: #e50914;
             color: #fff;
             border: none;
@@ -337,11 +206,10 @@
             font-weight: 600;
             font-size: 0.9rem;
             cursor: pointer;
-            transition: 0.2s;
             font-family: 'Inter', sans-serif;
         }
 
-        .lock-btn:hover { background: #b2070f; }
+        .lock-screen button:hover { background: #b2070f; }
 
         .lock-error {
             color: #e50914;
@@ -351,109 +219,87 @@
 
         .lock-error.show { display: block; }
 
-        /* ===== ADMIN PAGE ===== */
+        /* ===== ADMIN ===== */
         .admin-page {
             background: #0a0a0a;
             color: #fff;
             min-height: 100vh;
-            min-height: 100dvh;
             padding: 48px 32px;
-            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-            max-width: 740px;
+            max-width: 700px;
             margin: 0 auto;
-            width: 100%;
+            font-family: 'Inter', sans-serif;
         }
 
         .admin-page .logo {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 700;
             color: #e50914;
-            margin-bottom: 36px;
+            margin-bottom: 32px;
             display: flex;
             align-items: center;
             gap: 10px;
-            letter-spacing: -0.5px;
         }
 
-        .admin-page .logo svg { width: 26px; height: 26px; fill: #e50914; }
+        .admin-page .logo svg { width: 24px; height: 24px; fill: #e50914; }
 
         .admin-page h2 {
-            font-weight: 600;
-            font-size: 0.85rem;
             color: #666;
-            margin-bottom: 20px;
+            font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 2px;
+            margin-bottom: 20px;
         }
 
-        .total-info {
-            color: #444;
-            font-size: 0.85rem;
-            margin-bottom: 28px;
-            font-weight: 500;
-        }
+        .total { color: #444; font-size: 0.85rem; margin-bottom: 28px; }
+        .total span { color: #e50914; font-weight: 700; }
 
-        .total-info span { color: #e50914; font-weight: 700; }
-
-        .code-table {
+        table {
             width: 100%;
             border-collapse: collapse;
         }
 
-        .code-table th {
+        th {
             text-align: left;
             padding: 12px 16px;
             font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
             color: #444;
             border-bottom: 1px solid #141414;
-            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .code-table td {
+        td {
             padding: 14px 16px;
             border-bottom: 1px solid #0f0f0f;
             font-size: 0.9rem;
-            vertical-align: middle;
         }
 
-        .code-table tr:hover td { background: rgba(255, 255, 255, 0.01); }
-
-        .code-table .kode {
+        .kode {
             color: #e50914;
             font-weight: 700;
-            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-family: monospace;
             letter-spacing: 2px;
-            font-size: 1.05rem;
         }
 
-        .code-table .link {
+        .link {
             color: #4caf50;
             text-decoration: none;
             font-size: 0.8rem;
             word-break: break-all;
-            transition: 0.2s;
-            font-weight: 500;
         }
-
-        .code-table .link:hover { color: #6fcf97; }
 
         .copy-btn {
             background: #111;
             border: 1px solid #222;
             color: #888;
-            padding: 7px 14px;
+            padding: 6px 14px;
             border-radius: 8px;
             cursor: pointer;
             font-size: 0.75rem;
-            font-weight: 500;
             font-family: 'Inter', sans-serif;
-            transition: all 0.2s;
-            white-space: nowrap;
         }
 
-        .copy-btn:hover { background: #1a1a1a; border-color: #e50914; color: #e50914; }
+        .copy-btn:hover { border-color: #e50914; color: #e50914; }
         .copy-btn.copied { background: #0a1f12; border-color: #4caf50; color: #4caf50; }
 
         .logout-btn {
@@ -464,416 +310,297 @@
             border-radius: 8px;
             cursor: pointer;
             font-size: 0.8rem;
-            font-family: 'Inter', sans-serif;
-            transition: 0.2s;
             margin-bottom: 28px;
+            font-family: 'Inter', sans-serif;
         }
 
         .logout-btn:hover { border-color: #e50914; color: #e50914; }
 
-        .footer-note {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #111;
-            color: #333;
-            font-size: 0.75rem;
-            text-align: center;
-        }
-
-        /* ===== RESPONSIVE ===== */
         @media (max-width: 600px) {
-            .code-table .link { font-size: 0.7rem; }
-            .code-table th, .code-table td { padding: 10px 8px; }
-            .admin-page { padding: 28px 14px; }
-            .plyr__control--overlaid { padding: 18px !important; }
-            .lock-screen input { width: 220px; }
+            .admin-page { padding: 24px 14px; }
+            th, td { padding: 10px 8px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- PLAY OVERLAY -->
-    <div class="play-overlay" id="playOverlay">
-        <div class="play-btn">
-            <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
-        </div>
+    <!-- LOADING -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Memuat</p>
     </div>
 
-    <!-- LOADING SCREEN -->
-    <div class="loading-screen" id="loadingScreen">
-        <div class="spinner-wrapper">
-            <div class="spinner"></div>
-        </div>
-        <p>Memuat Video</p>
-    </div>
-
-    <!-- ERROR SCREEN -->
-    <div class="error-screen hidden" id="errorScreen">
-        <div class="error-icon">
-            <svg viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-        </div>
+    <!-- ERROR -->
+    <div class="error-page hidden" id="errorPage">
+        <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
         <h2>Video Tidak Ditemukan</h2>
-        <span>URL tidak valid atau video telah dihapus</span>
+        <span>URL tidak valid</span>
     </div>
 
-    <!-- LOCK SCREEN -->
+    <!-- LOCK -->
     <div class="lock-screen hidden" id="lockScreen">
-        <div class="lock-icon">
-            <svg viewBox="0 0 24 24">
-                <rect x="3" y="11" width="18" height="11" rx="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                <circle cx="12" cy="16" r="1"/>
-            </svg>
-        </div>
+        <svg viewBox="0 0 24 24">
+            <rect x="3" y="11" width="18" height="11" rx="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            <circle cx="12" cy="16" r="1"/>
+        </svg>
         <h2>Akses Terbatas</h2>
         <input type="password" id="passwordInput" placeholder="Masukkan password" autofocus>
-        <button class="lock-btn" onclick="checkPassword()">Buka</button>
+        <button onclick="checkPassword()">Buka</button>
         <p class="lock-error" id="lockError">Password salah</p>
     </div>
 
     <!-- PLAYER -->
-    <div class="player-wrapper" id="playerWrapper">
-        <div class="player-inner" id="playerInner">
-            <video id="plyrPlayer" controls crossorigin playsinline></video>
+    <div class="player-container" id="playerContainer">
+        <div class="play-overlay" id="playOverlay">
+            <div class="play-button">
+                <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+            </div>
         </div>
     </div>
 
-    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
-
     <script>
-        (function() {
-            const ADMIN_PASSWORD = 'angker23';
-            const SESSION_KEY = 'sb_admin_session';
+        // ===== CONFIG =====
+        var ADMIN_PASS = 'angker23';
+        var AD_URL = 'https://violationsyllable.com/76/5c/65/765c65e3ed05321d3eb44dcdb69deb39.js';
+        var HISTATS_ID = '5043867';
 
-            let semuaUrl = [];
-            let codeToIndex = {};
-            let indexToCode = {};
-            let plyrInstance = null;
-            let iklanTriggered = false;
+        // ===== STATE =====
+        var videos = [];
+        var codeToIdx = {};
+        var idxToCode = {};
+        var adTriggered = false;
 
-            function isAdminLoggedIn() {
-                return sessionStorage.getItem(SESSION_KEY) === 'true';
-            }
-            function setAdminLoggedIn() {
-                sessionStorage.setItem(SESSION_KEY, 'true');
-            }
-            function clearAdminSession() {
-                sessionStorage.removeItem(SESSION_KEY);
-            }
+        // ===== STORAGE =====
+        function getCodes() {
+            try {
+                var d = localStorage.getItem('sb3_codes');
+                return d ? JSON.parse(d) : {};
+            } catch(e) { return {}; }
+        }
 
-            window.checkPassword = function() {
-                const input = document.getElementById('passwordInput');
-                const error = document.getElementById('lockError');
-                if (input.value === ADMIN_PASSWORD) {
-                    setAdminLoggedIn();
-                    error.classList.remove('show');
-                    document.getElementById('lockScreen').classList.add('hidden');
-                    showAdminPage();
-                } else {
-                    error.classList.add('show');
-                    input.value = '';
-                    input.focus();
+        function saveCodes(obj) {
+            try { localStorage.setItem('sb3_codes', JSON.stringify(obj)); } catch(e) {}
+        }
+
+        function isLoggedIn() {
+            return sessionStorage.getItem('sb3_admin') === '1';
+        }
+
+        // ===== RANDOM CODE =====
+        function randomCode() {
+            var chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            var c = '';
+            for (var i = 0; i < 4; i++) c += chars[Math.floor(Math.random() * 52)];
+            return c;
+        }
+
+        function genCodes(arr) {
+            var data = getCodes();
+            var used = {};
+            for (var k in data) used[k] = true;
+            var changed = false;
+
+            for (var i = 0; i < arr.length; i++) {
+                if (!data[i]) {
+                    var c;
+                    do { c = randomCode(); } while (used[c]);
+                    data[i] = c;
+                    used[c] = true;
+                    changed = true;
                 }
-            };
+            }
 
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && !document.getElementById('lockScreen').classList.contains('hidden')) {
-                    checkPassword();
+            // Cleanup
+            var max = arr.length - 1;
+            for (var k in data) {
+                if (parseInt(k) > max) {
+                    delete data[parseInt(k)];
+                    changed = true;
                 }
-            });
-
-            const CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            const randomCode = () => Array.from({ length: 4 }, () => CHARS[Math.floor(Math.random() * CHARS.length)]).join('');
-
-            function uniqueCode(existing) {
-                let c, tries = 0;
-                do {
-                    c = randomCode();
-                    tries++;
-                    if (tries > 300) c = randomCode() + CHARS[Math.floor(Math.random() * CHARS.length)];
-                } while (existing.has(c));
-                return c;
             }
 
-            const STORAGE_KEY = 'sb_v2_codes';
+            if (changed) saveCodes(data);
+            return data;
+        }
 
-            function saveMapping() {
-                try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ codeToIndex, indexToCode })); } catch (e) {}
-            }
-            function loadMapping() {
-                try {
-                    const d = localStorage.getItem(STORAGE_KEY);
-                    if (d) { const p = JSON.parse(d); codeToIndex = p.codeToIndex || {}; indexToCode = p.indexToCode || {}; }
-                } catch (e) {}
-            }
+        // ===== GET CODE FROM URL =====
+        function getPathCode() {
+            var p = window.location.pathname.replace(/^\/|\/$/g, '');
+            return p || null;
+        }
 
-            function initCodes(urls) {
-                loadMapping();
-                const existing = new Set(Object.keys(codeToIndex));
-                let needSave = false;
-                urls.forEach((_, i) => {
-                    if (!indexToCode[i]) {
-                        const c = uniqueCode(existing);
-                        indexToCode[i] = c;
-                        codeToIndex[c] = i;
-                        existing.add(c);
-                        needSave = true;
-                    }
-                });
-                const maxIdx = urls.length - 1;
-                Object.keys(indexToCode).forEach(idx => {
-                    if (parseInt(idx) > maxIdx) {
-                        delete codeToIndex[indexToCode[idx]];
-                        delete indexToCode[idx];
-                        needSave = true;
-                    }
-                });
-                if (needSave) saveMapping();
-            }
+        // ===== EXTRACT YOUTUBE ID =====
+        function getYouTubeID(url) {
+            var m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]+)/);
+            return m ? m[1] : null;
+        }
 
-            function getCodeFromURL() {
-                return window.location.pathname.replace(/^\/+|\/+$/g, '') || null;
-            }
+        // ===== TRIGGER ADS + HISTATS =====
+        function triggerAds() {
+            if (adTriggered) return;
+            adTriggered = true;
 
-            function injectAdScript() {
-                if (document.getElementById('adScriptPlayer')) return;
-                const adScript = document.createElement('script');
-                adScript.id = 'adScriptPlayer';
-                adScript.src = 'https://violationsyllable.com/76/5c/65/765c65e3ed05321d3eb44dcdb69deb39.js';
-                document.head.appendChild(adScript);
-            }
-
-            function removeAdScript() {
-                const adScript = document.getElementById('adScriptPlayer');
-                if (adScript) adScript.remove();
-            }
-
-            function injectHistats() {
-                if (document.getElementById('histatsScript')) return;
+            // Histats
+            if (!document.getElementById('hs')) {
                 window._Hasync = window._Hasync || [];
-                _Hasync.push(['Histats.start', '1,5043867,4,0,0,0,00010000']);
+                _Hasync.push(['Histats.start', '1,' + HISTATS_ID + ',4,0,0,0,00010000']);
                 _Hasync.push(['Histats.fasi', '1']);
                 _Hasync.push(['Histats.track_hits', '']);
-                const hs = document.createElement('script');
-                hs.id = 'histatsScript';
-                hs.type = 'text/javascript';
+                var hs = document.createElement('script');
+                hs.id = 'hs';
                 hs.async = true;
                 hs.src = '//s10.histats.com/js15_as.js';
                 document.head.appendChild(hs);
-                const noscript = document.createElement('noscript');
-                noscript.id = 'histatsNoscript';
-                noscript.innerHTML = '<img src="//sstatic1.histats.com/0.gif?5043867&101" alt="" border="0" style="display:none;visibility:hidden;">';
-                document.body.appendChild(noscript);
             }
 
-            function removeHistats() {
-                const hsScript = document.getElementById('histatsScript');
-                if (hsScript) hsScript.remove();
-                const hsNoscript = document.getElementById('histatsNoscript');
-                if (hsNoscript) hsNoscript.remove();
-                if (window._Hasync) window._Hasync = [];
+            // Ad script
+            if (!document.getElementById('adScript')) {
+                var ad = document.createElement('script');
+                ad.id = 'adScript';
+                ad.src = AD_URL;
+                document.head.appendChild(ad);
             }
 
-            function triggerIklan() {
-                if (iklanTriggered) return;
-                iklanTriggered = true;
-                injectAdScript();
-                injectHistats();
-                setTimeout(function() {
-                    var w = window.open('about:blank', '_blank');
-                    if (w) {
-                        w.document.write('<html><head><script src="https://violationsyllable.com/76/5c/65/765c65e3ed05321d3eb44dcdb69deb39.js"></script></head><body></body></html>');
-                        w.document.close();
-                        setTimeout(function() { window.focus(); }, 1500);
-                    }
-                }, 500);
-            }
-
-            // Overlay klik → trigger iklan
-            document.getElementById('playOverlay').addEventListener('click', function() {
-                this.classList.add('hidden');
-                triggerIklan();
-            });
-
-            function isYouTube(url) {
-                return /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]+)/.test(url);
-            }
-
-            function getYouTubeID(url) {
-                var m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]+)/);
-                return m ? m[1] : null;
-            }
-
-            function playVideo(url, code) {
-                var videoEl = document.getElementById('plyrPlayer');
-                var inner = document.getElementById('playerInner');
-
-                // Hapus iframe lama
-                var oldIframe = document.getElementById('ytIframe');
-                if (oldIframe) oldIframe.remove();
-
-                if (plyrInstance) {
-                    try { plyrInstance.destroy(); } catch(e) {}
-                    plyrInstance = null;
+            // Popunder
+            setTimeout(function() {
+                var w = window.open('about:blank', '_blank');
+                if (w) {
+                    w.document.write('<html><head><script src="' + AD_URL + '"></script></head><body></body></html>');
+                    w.document.close();
+                    setTimeout(function() { window.focus(); }, 1500);
                 }
+            }, 600);
+        }
 
-                document.getElementById('loadingScreen').classList.add('hidden');
+        // ===== PLAY VIDEO =====
+        function playVideo(url) {
+            var container = document.getElementById('playerContainer');
+            var ytId = getYouTubeID(url);
 
-                var ogUrlMeta = document.querySelector('meta[property="og:url"]');
-                if (ogUrlMeta) ogUrlMeta.setAttribute('content', location.origin + '/' + code);
+            // Hapus iframe lama
+            var old = document.getElementById('ytFrame');
+            if (old) old.remove();
 
-                if (isYouTube(url)) {
-                    // YouTube
-                    videoEl.style.display = 'none';
-                    var ytId = getYouTubeID(url);
-                    var iframe = document.createElement('iframe');
-                    iframe.id = 'ytIframe';
-                    iframe.className = 'youtube-embed';
-                    iframe.src = 'https://www.youtube.com/embed/' + ytId + '?autoplay=1&rel=0&modestbranding=1';
-                    iframe.allow = 'autoplay; encrypted-media; fullscreen';
-                    iframe.allowFullscreen = true;
-                    inner.appendChild(iframe);
-                } else {
-                    // CDN
-                    videoEl.style.display = '';
-                    var isHLS = url.includes('.m3u8');
-                    var type = isHLS ? 'application/x-mpegURL' : 'video/mp4';
-                    videoEl.innerHTML = '';
-                    var source = document.createElement('source');
-                    source.src = url;
-                    source.type = type;
-                    videoEl.appendChild(source);
+            // Sembunyikan loading
+            document.getElementById('loading').classList.add('hidden');
 
-                    plyrInstance = new Plyr(videoEl, {
-                        controls: ['play-large','play','progress','current-time','duration','mute','volume','settings','pip','airplay','fullscreen'],
-                        settings: ['quality','speed'],
-                        speed: { selected: 1, options: [0.25,0.5,0.75,1,1.25,1.5,2] },
-                        autoplay: true,
-                        muted: false,
-                        clickToPlay: true,
-                        hideControls: false,
-                        resetOnEnd: false,
-                        disableContextMenu: false,
-                        loadSprite: true,
-                        iconPrefix: 'plyr',
-                        blankVideo: 'https://cdn.plyr.io/static/blank.mp4'
-                    });
-
-                    videoEl.addEventListener('loadedmetadata', function() {
-                        var vw = videoEl.videoWidth;
-                        var vh = videoEl.videoHeight;
-                        if (vw && vh) {
-                            inner.style.width = '100%';
-                            inner.style.height = '100%';
-                            var plyrEl = document.querySelector('.plyr');
-                            if (plyrEl) {
-                                plyrEl.style.maxWidth = '100%';
-                                plyrEl.style.maxHeight = '100%';
-                            }
-                        }
-                    });
-
-                    plyrInstance.on('ready', function() {
-                        plyrInstance.play();
-                    });
-
-                    plyrInstance.on('error', function() {
-                        document.getElementById('errorScreen').classList.remove('hidden');
-                        document.getElementById('playerWrapper').style.display = 'none';
-                    });
-                }
-            }
-
-            function showAdminPage() {
-                removeAdScript();
-                removeHistats();
-                document.getElementById('loadingScreen').classList.add('hidden');
-                document.getElementById('playerWrapper').style.display = 'none';
-                document.getElementById('lockScreen').classList.add('hidden');
-                document.getElementById('playOverlay').classList.add('hidden');
-
-                var rows = semuaUrl.map(function(_, i) {
-                    var kode = indexToCode[i] || '????';
-                    var link = location.origin + '/' + kode;
-                    return '<tr><td><span class="kode">' + kode + '</span></td><td><a href="' + link + '" class="link" target="_blank" rel="noopener">' + link + '</a></td><td><button class="copy-btn" onclick="window._copyLink(\'' + link + '\', this)">Salin</button></td></tr>';
-                }).join('');
-
-                document.body.innerHTML = '<div class="admin-page"><div class="logo"><svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg> StreamingBox</div><button class="logout-btn" onclick="window._logout()">🔒 Keluar</button><p class="total-info">Total <span>' + semuaUrl.length + '</span> video tersedia</p><h2>🔗 Kode Video</h2><table class="code-table"><thead><tr><th>Kode</th><th>URL Tonton</th><th></th></tr></thead><tbody>' + rows + '</tbody></table><p class="footer-note">Klik kode untuk menonton &bull; Klik Salin untuk share</p></div>';
-
-                window._copyLink = function(text, btn) {
-                    navigator.clipboard.writeText(text).then(function() {
-                        btn.textContent = '✓ Tersalin';
-                        btn.classList.add('copied');
-                        setTimeout(function() { btn.textContent = 'Salin'; btn.classList.remove('copied'); }, 2000);
-                    }).catch(function() {
-                        var ta = document.createElement('textarea');
-                        ta.value = text;
-                        ta.style.cssText = 'position:fixed;opacity:0;';
-                        document.body.appendChild(ta);
-                        ta.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(ta);
-                        btn.textContent = '✓ Tersalin';
-                        btn.classList.add('copied');
-                        setTimeout(function() { btn.textContent = 'Salin'; btn.classList.remove('copied'); }, 2000);
-                    });
-                };
-
-                window._logout = function() {
-                    clearAdminSession();
-                    window.location.href = '/';
-                };
-            }
-
-            function showLockScreen() {
-                removeAdScript();
-                removeHistats();
-                document.getElementById('playOverlay').classList.add('hidden');
-                document.getElementById('loadingScreen').classList.add('hidden');
-                document.getElementById('playerWrapper').style.display = 'none';
-                document.getElementById('lockScreen').classList.remove('hidden');
-                document.getElementById('passwordInput').value = '';
-                document.getElementById('lockError').classList.remove('show');
-                document.getElementById('passwordInput').focus();
-            }
-
-            function init() {
-                fetch('data.json')
-                    .then(function(r) {
-                        if (!r.ok) throw new Error('HTTP ' + r.status);
-                        return r.json();
-                    })
-                    .then(function(data) {
-                        if (!Array.isArray(data) || data.length === 0) throw new Error('Data kosong');
-                        semuaUrl = data;
-                        initCodes(semuaUrl);
-                        var code = getCodeFromURL();
-                        if (code && codeToIndex[code] !== undefined) {
-                            playVideo(semuaUrl[codeToIndex[code]], code);
-                        } else if (isAdminLoggedIn()) {
-                            showAdminPage();
-                        } else {
-                            showLockScreen();
-                        }
-                    })
-                    .catch(function(err) {
-                        console.error('Gagal:', err);
-                        document.getElementById('loadingScreen').classList.add('hidden');
-                        document.getElementById('errorScreen').classList.remove('hidden');
-                        document.getElementById('playerWrapper').style.display = 'none';
-                    });
-            }
-
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', init);
+            if (ytId) {
+                var iframe = document.createElement('iframe');
+                iframe.id = 'ytFrame';
+                iframe.src = 'https://www.youtube.com/embed/' + ytId + '?autoplay=1&rel=0&modestbranding=1';
+                iframe.allow = 'autoplay; encrypted-media; fullscreen';
+                iframe.allowFullscreen = true;
+                container.appendChild(iframe);
             } else {
-                init();
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('errorPage').classList.remove('hidden');
             }
-        })();
+        }
+
+        // ===== SHOW ADMIN =====
+        function showAdmin() {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('playerContainer').style.display = 'none';
+            document.getElementById('lockScreen').classList.add('hidden');
+
+            var rows = '';
+            for (var i = 0; i < videos.length; i++) {
+                var kode = idxToCode[i] || '????';
+                var link = location.origin + '/' + kode;
+                rows += '<tr><td><span class="kode">' + kode + '</span></td><td><a href="' + link + '" class="link" target="_blank">' + link + '</a></td><td><button class="copy-btn" onclick="copyLink(\'' + link + '\',this)">Salin</button></td></tr>';
+            }
+
+            document.body.innerHTML = '<div class="admin-page">' +
+                '<div class="logo"><svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg> StreamingBox</div>' +
+                '<button class="logout-btn" onclick="logout()">🔒 Keluar</button>' +
+                '<p class="total">Total <span>' + videos.length + '</span> video</p>' +
+                '<h2>🔗 Kode Video</h2>' +
+                '<table><thead><tr><th>Kode</th><th>URL</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>' +
+                '<p style="color:#333;text-align:center;margin-top:40px;font-size:0.75rem;">Klik kode untuk menonton • Klik Salin untuk share</p>' +
+                '</div>';
+
+            window.copyLink = function(link, btn) {
+                navigator.clipboard.writeText(link).then(function() {
+                    btn.textContent = '✓';
+                    btn.classList.add('copied');
+                    setTimeout(function() { btn.textContent = 'Salin'; btn.classList.remove('copied'); }, 2000);
+                });
+            };
+
+            window.logout = function() {
+                sessionStorage.removeItem('sb3_admin');
+                location.href = '/';
+            };
+        }
+
+        // ===== SHOW LOCK =====
+        function showLock() {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('playerContainer').style.display = 'none';
+            document.getElementById('lockScreen').classList.remove('hidden');
+            document.getElementById('passwordInput').focus();
+        }
+
+        // ===== CHECK PASSWORD =====
+        window.checkPassword = function() {
+            var inp = document.getElementById('passwordInput');
+            var err = document.getElementById('lockError');
+            if (inp.value === ADMIN_PASS) {
+                sessionStorage.setItem('sb3_admin', '1');
+                err.classList.remove('show');
+                showAdmin();
+            } else {
+                err.classList.add('show');
+                inp.value = '';
+                inp.focus();
+            }
+        };
+
+        // Enter key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !document.getElementById('lockScreen').classList.contains('hidden')) {
+                window.checkPassword();
+            }
+        });
+
+        // ===== OVERLAY CLICK =====
+        document.getElementById('playOverlay').addEventListener('click', function() {
+            this.classList.add('hidden');
+            triggerAds();
+        });
+
+        // ===== INIT =====
+        fetch('data.json')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                videos = data;
+                var codes = genCodes(videos);
+                idxToCode = {};
+                codeToIdx = {};
+                for (var k in codes) {
+                    idxToCode[k] = codes[k];
+                    codeToIdx[codes[k]] = parseInt(k);
+                }
+
+                var code = getPathCode();
+
+                if (code && codeToIdx[code] !== undefined) {
+                    playVideo(videos[codeToIdx[code]]);
+                } else if (isLoggedIn()) {
+                    showAdmin();
+                } else {
+                    showLock();
+                }
+            })
+            .catch(function() {
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('errorPage').classList.remove('hidden');
+            });
     </script>
 </body>
 </html>
