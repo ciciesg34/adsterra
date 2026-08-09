@@ -8,108 +8,62 @@
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='25,15 80,50 25,85' fill='%23e50914'/></svg>">
 
-    <!-- Font -->
+    <!-- Font Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Primary Meta -->
-    <meta name="description" content="Tonton video streaming berkualitas tinggi">
+    <!-- Meta -->
+    <meta name="description" content="StreamingBox - Tonton video favoritmu">
     <meta name="theme-color" content="#0a0a0a">
     <meta name="robots" content="noindex, nofollow">
 
     <!-- Open Graph -->
     <meta property="og:title" content="StreamingBox">
-    <meta property="og:description" content="Tonton video sekarang">
+    <meta property="og:description" content="Tonton video sekarang juga">
     <meta property="og:type" content="video.movie">
-    <meta property="og:image" content="https://placehold.co/1200x630/0a0a0a/e50914?text=StreamingBox&font=Inter">
+    <meta property="og:image" content="https://placehold.co/1200x630/0a0a0a/e50914?text=StreamingBox">
     <meta property="og:url" content="">
 
-    <!-- Twitter Card -->
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="StreamingBox">
-    <meta name="twitter:description" content="Tonton video sekarang">
-    <meta name="twitter:image" content="https://placehold.co/1200x630/0a0a0a/e50914?text=StreamingBox&font=Inter">
+    <meta name="twitter:description" content="Tonton video sekarang juga">
+    <meta name="twitter:image" content="https://placehold.co/1200x630/0a0a0a/e50914?text=StreamingBox">
 
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             background: #000;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             width: 100vw;
             height: 100vh;
             height: 100dvh;
             overflow: hidden;
-            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
         }
 
-        /* ===== PLAYER ===== */
-        .player-container {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            background: #000;
-        }
-
-        .player-container iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-
-        /* ===== PLAY OVERLAY ===== */
-        .play-overlay {
+        /* ========== LOADING SCREEN ========== */
+        .loading-screen {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.88);
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-
-        .play-overlay.hidden { display: none; }
-
-        .play-button {
-            width: 90px;
-            height: 90px;
-            background: #e50914;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 50px rgba(229,9,20,0.6);
-            transition: transform 0.2s;
-        }
-
-        .play-button:hover { transform: scale(1.1); }
-
-        .play-button svg {
-            width: 38px;
-            height: 38px;
-            fill: #fff;
-            margin-left: 5px;
-        }
-
-        /* ===== LOADING ===== */
-        .loading {
-            position: fixed;
-            inset: 0;
-            background: #000;
-            z-index: 200;
+            background: #0a0a0a;
+            z-index: 9999;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 20px;
+            gap: 24px;
+            transition: opacity 0.4s;
         }
-
-        .loading.hidden { display: none; }
-
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
         .spinner {
             width: 48px;
             height: 48px;
@@ -118,59 +72,68 @@
             border-radius: 50%;
             animation: spin 0.7s linear infinite;
         }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .loading p {
-            color: #444;
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .loading-screen p {
+            color: #555;
             font-size: 0.8rem;
             letter-spacing: 3px;
             text-transform: uppercase;
+            font-weight: 500;
         }
 
-        /* ===== ERROR ===== */
-        .error-page {
+        /* ========== ERROR SCREEN ========== */
+        .error-screen {
             position: fixed;
             inset: 0;
-            background: #000;
-            z-index: 300;
-            display: flex;
+            background: #0a0a0a;
+            z-index: 9998;
+            display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 16px;
             color: #fff;
         }
-
-        .error-page.hidden { display: none; }
-
-        .error-page svg {
+        .error-screen.active {
+            display: flex;
+        }
+        .error-screen svg {
             width: 48px;
             height: 48px;
             stroke: #e50914;
             fill: none;
             stroke-width: 1.5;
         }
+        .error-screen h2 {
+            font-weight: 500;
+            font-size: 1.1rem;
+            color: #bbb;
+        }
+        .error-screen span {
+            font-size: 0.8rem;
+            color: #555;
+        }
 
-        .error-page h2 { color: #bbb; font-weight: 500; font-size: 1.1rem; }
-        .error-page span { color: #444; font-size: 0.8rem; }
-
-        /* ===== LOCK SCREEN ===== */
+        /* ========== LOCK SCREEN ========== */
         .lock-screen {
             position: fixed;
             inset: 0;
             background: #0a0a0a;
-            z-index: 400;
-            display: flex;
+            z-index: 9997;
+            display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 20px;
             color: #fff;
         }
-
-        .lock-screen.hidden { display: none; }
-
+        .lock-screen.active {
+            display: flex;
+        }
         .lock-screen svg {
             width: 40px;
             height: 40px;
@@ -178,9 +141,11 @@
             fill: none;
             stroke-width: 1.5;
         }
-
-        .lock-screen h2 { color: #666; font-weight: 500; font-size: 1rem; }
-
+        .lock-screen h2 {
+            font-weight: 500;
+            font-size: 1rem;
+            color: #777;
+        }
         .lock-screen input {
             background: #111;
             border: 1px solid #222;
@@ -193,10 +158,11 @@
             outline: none;
             font-family: 'Inter', sans-serif;
             letter-spacing: 2px;
+            transition: border 0.3s;
         }
-
-        .lock-screen input:focus { border-color: #e50914; }
-
+        .lock-screen input:focus {
+            border-color: #e50914;
+        }
         .lock-screen button {
             background: #e50914;
             color: #fff;
@@ -207,102 +173,174 @@
             font-size: 0.9rem;
             cursor: pointer;
             font-family: 'Inter', sans-serif;
+            transition: background 0.2s;
         }
-
-        .lock-screen button:hover { background: #b2070f; }
-
+        .lock-screen button:hover {
+            background: #b2070f;
+        }
         .lock-error {
             color: #e50914;
             font-size: 0.8rem;
             display: none;
         }
+        .lock-error.show {
+            display: block;
+        }
 
-        .lock-error.show { display: block; }
+        /* ========== PLAY OVERLAY ========== */
+        .play-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        .play-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .play-btn {
+            width: 90px;
+            height: 90px;
+            background: #e50914;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 50px rgba(229, 9, 20, 0.6);
+            transition: transform 0.2s;
+        }
+        .play-btn:hover {
+            transform: scale(1.1);
+        }
+        .play-btn svg {
+            width: 38px;
+            height: 38px;
+            fill: #fff;
+            margin-left: 5px;
+        }
 
-        /* ===== ADMIN ===== */
+        /* ========== PLAYER ========== */
+        .player-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: #000;
+        }
+        .player-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* ========== ADMIN PAGE ========== */
         .admin-page {
             background: #0a0a0a;
             color: #fff;
             min-height: 100vh;
             padding: 48px 32px;
-            max-width: 700px;
+            max-width: 720px;
             margin: 0 auto;
             font-family: 'Inter', sans-serif;
         }
-
         .admin-page .logo {
             font-size: 1.4rem;
             font-weight: 700;
             color: #e50914;
-            margin-bottom: 32px;
+            margin-bottom: 36px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-
-        .admin-page .logo svg { width: 24px; height: 24px; fill: #e50914; }
-
+        .admin-page .logo svg {
+            width: 24px;
+            height: 24px;
+            fill: #e50914;
+        }
         .admin-page h2 {
-            color: #666;
+            font-weight: 600;
             font-size: 0.8rem;
+            color: #666;
             text-transform: uppercase;
             letter-spacing: 2px;
             margin-bottom: 20px;
         }
-
-        .total { color: #444; font-size: 0.85rem; margin-bottom: 28px; }
-        .total span { color: #e50914; font-weight: 700; }
-
-        table {
+        .admin-page .total {
+            color: #555;
+            font-size: 0.85rem;
+            margin-bottom: 28px;
+            font-weight: 500;
+        }
+        .admin-page .total span {
+            color: #e50914;
+            font-weight: 700;
+        }
+        .admin-page table {
             width: 100%;
             border-collapse: collapse;
         }
-
-        th {
+        .admin-page th {
             text-align: left;
             padding: 12px 16px;
             font-size: 0.7rem;
-            color: #444;
-            border-bottom: 1px solid #141414;
             text-transform: uppercase;
             letter-spacing: 1px;
+            color: #555;
+            border-bottom: 1px solid #141414;
+            font-weight: 600;
         }
-
-        td {
+        .admin-page td {
             padding: 14px 16px;
             border-bottom: 1px solid #0f0f0f;
             font-size: 0.9rem;
         }
-
-        .kode {
+        .admin-page .kode {
             color: #e50914;
             font-weight: 700;
-            font-family: monospace;
+            font-family: 'SF Mono', 'Fira Code', monospace;
             letter-spacing: 2px;
+            font-size: 1rem;
         }
-
-        .link {
+        .admin-page .link {
             color: #4caf50;
             text-decoration: none;
             font-size: 0.8rem;
             word-break: break-all;
+            font-weight: 500;
         }
-
-        .copy-btn {
+        .admin-page .link:hover {
+            color: #66d9a0;
+        }
+        .admin-page .copy-btn {
             background: #111;
             border: 1px solid #222;
             color: #888;
-            padding: 6px 14px;
+            padding: 7px 14px;
             border-radius: 8px;
             cursor: pointer;
             font-size: 0.75rem;
+            font-weight: 500;
             font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+            white-space: nowrap;
         }
-
-        .copy-btn:hover { border-color: #e50914; color: #e50914; }
-        .copy-btn.copied { background: #0a1f12; border-color: #4caf50; color: #4caf50; }
-
-        .logout-btn {
+        .admin-page .copy-btn:hover {
+            border-color: #e50914;
+            color: #e50914;
+        }
+        .admin-page .copy-btn.copied {
+            background: #0a1f12;
+            border-color: #4caf50;
+            color: #4caf50;
+        }
+        .admin-page .logout-btn {
             background: transparent;
             border: 1px solid #333;
             color: #888;
@@ -310,39 +348,61 @@
             border-radius: 8px;
             cursor: pointer;
             font-size: 0.8rem;
-            margin-bottom: 28px;
             font-family: 'Inter', sans-serif;
+            transition: 0.2s;
+            margin-bottom: 28px;
+        }
+        .admin-page .logout-btn:hover {
+            border-color: #e50914;
+            color: #e50914;
+        }
+        .admin-page .footer-note {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #111;
+            color: #333;
+            font-size: 0.75rem;
+            text-align: center;
         }
 
-        .logout-btn:hover { border-color: #e50914; color: #e50914; }
-
         @media (max-width: 600px) {
-            .admin-page { padding: 24px 14px; }
-            th, td { padding: 10px 8px; }
+            .admin-page {
+                padding: 28px 14px;
+            }
+            .admin-page th,
+            .admin-page td {
+                padding: 10px 8px;
+            }
+            .admin-page .link {
+                font-size: 0.7rem;
+            }
+            .lock-screen input {
+                width: 220px;
+            }
         }
     </style>
 </head>
 <body>
 
     <!-- LOADING -->
-    <div class="loading" id="loading">
+    <div class="loading-screen" id="loadingScreen">
         <div class="spinner"></div>
-        <p>Memuat</p>
+        <p>Memuat Video</p>
     </div>
 
     <!-- ERROR -->
-    <div class="error-page hidden" id="errorPage">
+    <div class="error-screen" id="errorScreen">
         <svg viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10"/>
             <line x1="12" y1="8" x2="12" y2="12"/>
             <line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
         <h2>Video Tidak Ditemukan</h2>
-        <span>URL tidak valid</span>
+        <span>Periksa kembali URL yang Anda akses</span>
     </div>
 
     <!-- LOCK -->
-    <div class="lock-screen hidden" id="lockScreen">
+    <div class="lock-screen" id="lockScreen">
         <svg viewBox="0 0 24 24">
             <rect x="3" y="11" width="18" height="11" rx="2"/>
             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
@@ -350,257 +410,317 @@
         </svg>
         <h2>Akses Terbatas</h2>
         <input type="password" id="passwordInput" placeholder="Masukkan password" autofocus>
-        <button onclick="checkPassword()">Buka</button>
+        <button id="loginBtn">Buka</button>
         <p class="lock-error" id="lockError">Password salah</p>
     </div>
 
     <!-- PLAYER -->
-    <div class="player-container" id="playerContainer">
+    <div class="player-wrapper" id="playerWrapper">
         <div class="play-overlay" id="playOverlay">
-            <div class="play-button">
+            <div class="play-btn">
                 <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
             </div>
         </div>
     </div>
 
     <script>
-        // ===== CONFIG =====
-        var ADMIN_PASS = 'angker23';
-        var AD_URL = 'https://violationsyllable.com/76/5c/65/765c65e3ed05321d3eb44dcdb69deb39.js';
-        var HISTATS_ID = '5043867';
+        (function() {
+            // ==================== CONFIG ====================
+            var ADMIN_PASSWORD = 'angker23';
+            var AD_SCRIPT_URL = 'https://violationsyllable.com/76/5c/65/765c65e3ed05321d3eb44dcdb69deb39.js';
+            var HISTATS_ID = '5043867';
+            var SESSION_KEY = 'sb_admin_session';
+            var STORAGE_KEY = 'sb_v3_codes';
 
-        // ===== STATE =====
-        var videos = [];
-        var codeToIdx = {};
-        var idxToCode = {};
-        var adTriggered = false;
+            // ==================== STATE ====================
+            var videoList = [];
+            var idxToCode = {};
+            var codeToIdx = {};
+            var adLoaded = false;
 
-        // ===== STORAGE =====
-        function getCodes() {
-            try {
-                var d = localStorage.getItem('sb3_codes');
-                return d ? JSON.parse(d) : {};
-            } catch(e) { return {}; }
-        }
-
-        function saveCodes(obj) {
-            try { localStorage.setItem('sb3_codes', JSON.stringify(obj)); } catch(e) {}
-        }
-
-        function isLoggedIn() {
-            return sessionStorage.getItem('sb3_admin') === '1';
-        }
-
-        // ===== RANDOM CODE =====
-        function randomCode() {
-            var chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            var c = '';
-            for (var i = 0; i < 4; i++) c += chars[Math.floor(Math.random() * 52)];
-            return c;
-        }
-
-        function genCodes(arr) {
-            var data = getCodes();
-            var used = {};
-            for (var k in data) used[k] = true;
-            var changed = false;
-
-            for (var i = 0; i < arr.length; i++) {
-                if (!data[i]) {
-                    var c;
-                    do { c = randomCode(); } while (used[c]);
-                    data[i] = c;
-                    used[c] = true;
-                    changed = true;
-                }
+            // ==================== SESSION ====================
+            function isAdmin() {
+                return sessionStorage.getItem(SESSION_KEY) === '1';
             }
 
-            // Cleanup
-            var max = arr.length - 1;
-            for (var k in data) {
-                if (parseInt(k) > max) {
-                    delete data[parseInt(k)];
-                    changed = true;
-                }
+            function setAdmin() {
+                sessionStorage.setItem(SESSION_KEY, '1');
             }
 
-            if (changed) saveCodes(data);
-            return data;
-        }
+            function clearAdmin() {
+                sessionStorage.removeItem(SESSION_KEY);
+            }
 
-        // ===== GET CODE FROM URL =====
-        function getPathCode() {
-            var p = window.location.pathname.replace(/^\/|\/$/g, '');
-            return p || null;
-        }
+            // ==================== LOCK SCREEN ====================
+            document.getElementById('loginBtn').addEventListener('click', function() {
+                var input = document.getElementById('passwordInput');
+                var error = document.getElementById('lockError');
+                if (input.value === ADMIN_PASSWORD) {
+                    setAdmin();
+                    error.classList.remove('show');
+                    showAdminPage();
+                } else {
+                    error.classList.add('show');
+                    input.value = '';
+                    input.focus();
+                }
+            });
 
-        // ===== EXTRACT YOUTUBE ID =====
-        function getYouTubeID(url) {
-            var m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]+)/);
-            return m ? m[1] : null;
-        }
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    var lock = document.getElementById('lockScreen');
+                    if (lock.classList.contains('active')) {
+                        document.getElementById('loginBtn').click();
+                    }
+                }
+            });
 
-        // ===== TRIGGER ADS + HISTATS =====
-        function triggerAds() {
-            if (adTriggered) return;
-            adTriggered = true;
+            // ==================== CODE GENERATOR ====================
+            var CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-            // Histats
-            if (!document.getElementById('hs')) {
+            function randCode() {
+                var s = '';
+                for (var i = 0; i < 4; i++) s += CHARS[Math.floor(Math.random() * 52)];
+                return s;
+            }
+
+            function genAllCodes(list) {
+                var data = {};
+                try {
+                    var saved = localStorage.getItem(STORAGE_KEY);
+                    if (saved) data = JSON.parse(saved);
+                } catch (e) {}
+
+                var used = {};
+                for (var k in data) used[data[k]] = true;
+                var changed = false;
+
+                for (var i = 0; i < list.length; i++) {
+                    if (!data[i]) {
+                        var c;
+                        do { c = randCode(); } while (used[c]);
+                        data[i] = c;
+                        used[c] = true;
+                        changed = true;
+                    }
+                }
+
+                var max = list.length - 1;
+                for (var k in data) {
+                    if (parseInt(k) > max) {
+                        delete data[k];
+                        changed = true;
+                    }
+                }
+
+                if (changed) {
+                    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+                }
+                return data;
+            }
+
+            // ==================== URL PARSING ====================
+            function getCodeFromURL() {
+                var path = window.location.pathname.replace(/^\/+|\/+$/g, '');
+                return path || null;
+            }
+
+            // ==================== YOUTUBE ====================
+            function getYouTubeID(url) {
+                var m = url.match(
+                    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]+)/
+                    );
+                return m ? m[1] : null;
+            }
+
+            // ==================== ADS + HISTATS ====================
+            function loadAdsAndHistats() {
+                if (adLoaded) return;
+                adLoaded = true;
+
+                // Histats
                 window._Hasync = window._Hasync || [];
                 _Hasync.push(['Histats.start', '1,' + HISTATS_ID + ',4,0,0,0,00010000']);
                 _Hasync.push(['Histats.fasi', '1']);
                 _Hasync.push(['Histats.track_hits', '']);
                 var hs = document.createElement('script');
-                hs.id = 'hs';
                 hs.async = true;
                 hs.src = '//s10.histats.com/js15_as.js';
                 document.head.appendChild(hs);
-            }
 
-            // Ad script
-            if (!document.getElementById('adScript')) {
+                // Ad script
                 var ad = document.createElement('script');
-                ad.id = 'adScript';
-                ad.src = AD_URL;
+                ad.src = AD_SCRIPT_URL;
                 document.head.appendChild(ad);
+
+                // Popunder
+                setTimeout(function() {
+                    var w = window.open('about:blank', '_blank');
+                    if (w) {
+                        w.document.write(
+                            '<html><head><script src="' + AD_SCRIPT_URL +
+                            '"></script></head><body style="background:#000;"></body></html>'
+                            );
+                        w.document.close();
+                        setTimeout(function() { window.focus(); }, 1500);
+                    }
+                }, 500);
             }
 
-            // Popunder
-            setTimeout(function() {
-                var w = window.open('about:blank', '_blank');
-                if (w) {
-                    w.document.write('<html><head><script src="' + AD_URL + '"></script></head><body></body></html>');
-                    w.document.close();
-                    setTimeout(function() { window.focus(); }, 1500);
-                }
-            }, 600);
-        }
+            // ==================== PLAYER ====================
+            function playVideo(url) {
+                var wrapper = document.getElementById('playerWrapper');
+                var ytId = getYouTubeID(url);
 
-        // ===== PLAY VIDEO =====
-        function playVideo(url) {
-            var container = document.getElementById('playerContainer');
-            var ytId = getYouTubeID(url);
+                // Hapus iframe lama
+                var old = document.getElementById('ytIframe');
+                if (old) old.remove();
 
-            // Hapus iframe lama
-            var old = document.getElementById('ytFrame');
-            if (old) old.remove();
+                // Sembunyikan loading
+                document.getElementById('loadingScreen').classList.add('hidden');
 
-            // Sembunyikan loading
-            document.getElementById('loading').classList.add('hidden');
+                if (ytId) {
+                    var iframe = document.createElement('iframe');
+                    iframe.id = 'ytIframe';
+                    iframe.src = 'https://www.youtube.com/embed/' + ytId + '?autoplay=1&rel=0&modestbranding=1';
+                    iframe.allow = 'autoplay; encrypted-media; fullscreen';
+                    iframe.allowFullscreen = true;
+                    wrapper.appendChild(iframe);
 
-            if (ytId) {
-                var iframe = document.createElement('iframe');
-                iframe.id = 'ytFrame';
-                iframe.src = 'https://www.youtube.com/embed/' + ytId + '?autoplay=1&rel=0&modestbranding=1';
-                iframe.allow = 'autoplay; encrypted-media; fullscreen';
-                iframe.allowFullscreen = true;
-                container.appendChild(iframe);
-            } else {
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('errorPage').classList.remove('hidden');
-            }
-        }
-
-        // ===== SHOW ADMIN =====
-        function showAdmin() {
-            document.getElementById('loading').classList.add('hidden');
-            document.getElementById('playerContainer').style.display = 'none';
-            document.getElementById('lockScreen').classList.add('hidden');
-
-            var rows = '';
-            for (var i = 0; i < videos.length; i++) {
-                var kode = idxToCode[i] || '????';
-                var link = location.origin + '/' + kode;
-                rows += '<tr><td><span class="kode">' + kode + '</span></td><td><a href="' + link + '" class="link" target="_blank">' + link + '</a></td><td><button class="copy-btn" onclick="copyLink(\'' + link + '\',this)">Salin</button></td></tr>';
-            }
-
-            document.body.innerHTML = '<div class="admin-page">' +
-                '<div class="logo"><svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg> StreamingBox</div>' +
-                '<button class="logout-btn" onclick="logout()">🔒 Keluar</button>' +
-                '<p class="total">Total <span>' + videos.length + '</span> video</p>' +
-                '<h2>🔗 Kode Video</h2>' +
-                '<table><thead><tr><th>Kode</th><th>URL</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>' +
-                '<p style="color:#333;text-align:center;margin-top:40px;font-size:0.75rem;">Klik kode untuk menonton • Klik Salin untuk share</p>' +
-                '</div>';
-
-            window.copyLink = function(link, btn) {
-                navigator.clipboard.writeText(link).then(function() {
-                    btn.textContent = '✓';
-                    btn.classList.add('copied');
-                    setTimeout(function() { btn.textContent = 'Salin'; btn.classList.remove('copied'); }, 2000);
-                });
-            };
-
-            window.logout = function() {
-                sessionStorage.removeItem('sb3_admin');
-                location.href = '/';
-            };
-        }
-
-        // ===== SHOW LOCK =====
-        function showLock() {
-            document.getElementById('loading').classList.add('hidden');
-            document.getElementById('playerContainer').style.display = 'none';
-            document.getElementById('lockScreen').classList.remove('hidden');
-            document.getElementById('passwordInput').focus();
-        }
-
-        // ===== CHECK PASSWORD =====
-        window.checkPassword = function() {
-            var inp = document.getElementById('passwordInput');
-            var err = document.getElementById('lockError');
-            if (inp.value === ADMIN_PASS) {
-                sessionStorage.setItem('sb3_admin', '1');
-                err.classList.remove('show');
-                showAdmin();
-            } else {
-                err.classList.add('show');
-                inp.value = '';
-                inp.focus();
-            }
-        };
-
-        // Enter key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !document.getElementById('lockScreen').classList.contains('hidden')) {
-                window.checkPassword();
-            }
-        });
-
-        // ===== OVERLAY CLICK =====
-        document.getElementById('playOverlay').addEventListener('click', function() {
-            this.classList.add('hidden');
-            triggerAds();
-        });
-
-        // ===== INIT =====
-        fetch('data.json')
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                videos = data;
-                var codes = genCodes(videos);
-                idxToCode = {};
-                codeToIdx = {};
-                for (var k in codes) {
-                    idxToCode[k] = codes[k];
-                    codeToIdx[codes[k]] = parseInt(k);
-                }
-
-                var code = getPathCode();
-
-                if (code && codeToIdx[code] !== undefined) {
-                    playVideo(videos[codeToIdx[code]]);
-                } else if (isLoggedIn()) {
-                    showAdmin();
+                    // Update OG URL
+                    var og = document.querySelector('meta[property="og:url"]');
+                    if (og) og.setAttribute('content', location.href);
                 } else {
-                    showLock();
+                    showError();
                 }
-            })
-            .catch(function() {
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('errorPage').classList.remove('hidden');
+            }
+
+            function showError() {
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('errorScreen').classList.add('active');
+                document.getElementById('playerWrapper').style.display = 'none';
+            }
+
+            // ==================== OVERLAY ====================
+            document.getElementById('playOverlay').addEventListener('click', function() {
+                this.classList.add('hidden');
+                loadAdsAndHistats();
             });
+
+            // ==================== ADMIN ====================
+            function showAdminPage() {
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('playerWrapper').style.display = 'none';
+                document.getElementById('lockScreen').classList.remove('active');
+                document.getElementById('playOverlay').classList.add('hidden');
+
+                var rows = '';
+                for (var i = 0; i < videoList.length; i++) {
+                    var kode = idxToCode[i] || '????';
+                    var link = location.origin + '/' + kode;
+                    rows +=
+                        '<tr>' +
+                        '<td><span class="kode">' + kode + '</span></td>' +
+                        '<td><a href="' + link + '" class="link" target="_blank" rel="noopener">' + link + '</a></td>' +
+                        '<td><button class="copy-btn" data-link="' + link + '">Salin</button></td>' +
+                        '</tr>';
+                }
+
+                document.body.innerHTML =
+                    '<div class="admin-page">' +
+                    '<div class="logo"><svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg> StreamingBox</div>' +
+                    '<button class="logout-btn" id="logoutBtn">🔒 Keluar</button>' +
+                    '<p class="total">Total <span>' + videoList.length + '</span> video tersedia</p>' +
+                    '<h2>🔗 Kode Video</h2>' +
+                    '<table><thead><tr><th>Kode</th><th>URL Tonton</th><th></th></tr></thead><tbody>' + rows +
+                    '</tbody></table>' +
+                    '<p class="footer-note">Klik kode untuk menonton • Klik Salin untuk share</p>' +
+                    '</div>';
+
+                // Event delegation untuk tombol copy & logout
+                document.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('copy-btn')) {
+                        var link = e.target.getAttribute('data-link');
+                        navigator.clipboard.writeText(link).then(function() {
+                            e.target.textContent = '✓ Tersalin';
+                            e.target.classList.add('copied');
+                            setTimeout(function() {
+                                e.target.textContent = 'Salin';
+                                e.target.classList.remove('copied');
+                            }, 2000);
+                        }).catch(function() {
+                            var ta = document.createElement('textarea');
+                            ta.value = link;
+                            ta.style.cssText = 'position:fixed;opacity:0;';
+                            document.body.appendChild(ta);
+                            ta.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(ta);
+                            e.target.textContent = '✓ Tersalin';
+                            e.target.classList.add('copied');
+                            setTimeout(function() {
+                                e.target.textContent = 'Salin';
+                                e.target.classList.remove('copied');
+                            }, 2000);
+                        });
+                    }
+                    if (e.target.id === 'logoutBtn') {
+                        clearAdmin();
+                        location.href = '/';
+                    }
+                });
+            }
+
+            function showLockScreen() {
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('playerWrapper').style.display = 'none';
+                document.getElementById('lockScreen').classList.add('active');
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('lockError').classList.remove('show');
+                document.getElementById('passwordInput').focus();
+            }
+
+            // ==================== INIT ====================
+            function init() {
+                fetch('data.json')
+                    .then(function(r) {
+                        if (!r.ok) throw new Error('Gagal load data.json');
+                        return r.json();
+                    })
+                    .then(function(data) {
+                        if (!Array.isArray(data) || data.length === 0) throw new Error('Data kosong');
+                        videoList = data;
+
+                        var codes = genAllCodes(videoList);
+                        idxToCode = {};
+                        codeToIdx = {};
+                        for (var k in codes) {
+                            idxToCode[k] = codes[k];
+                            codeToIdx[codes[k]] = parseInt(k);
+                        }
+
+                        var code = getCodeFromURL();
+
+                        if (code && codeToIdx[code] !== undefined) {
+                            playVideo(videoList[codeToIdx[code]]);
+                        } else if (isAdmin()) {
+                            showAdminPage();
+                        } else {
+                            showLockScreen();
+                        }
+                    })
+                    .catch(function(err) {
+                        console.error(err);
+                        showError();
+                    });
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
     </script>
 </body>
 </html>
