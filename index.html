@@ -8,156 +8,122 @@
     <meta name="theme-color" content="#000">
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        body{background:#000;width:100vw;height:100vh;overflow:hidden;font-family:'Segoe UI',system-ui,sans-serif}
+        body{background:#000;color:#fff;font-family:'Segoe UI',sans-serif}
         
-        .screen{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:10}
-        .screen.active{display:flex}
-        .screen.loading{background:#0a0a0a;flex-direction:column;gap:20px;z-index:100}
-        .screen.loading .spinner{width:48px;height:48px;border:3px solid #1a1a1a;border-top-color:#e50914;border-radius:50%;animation:spin 0.7s linear infinite}
+        .screen{position:fixed;inset:0;display:none;z-index:10}
+        .screen.active{display:flex;align-items:center;justify-content:center;flex-direction:column}
+        
+        #loading{background:#0a0a0a;gap:20px;z-index:100}
+        #loading .spinner{width:48px;height:48px;border:3px solid #222;border-top-color:#e50914;border-radius:50%;animation:spin 0.7s linear infinite}
         @keyframes spin{to{transform:rotate(360deg)}}
-        .screen.loading p{color:#555;font-size:0.8rem;letter-spacing:3px;text-transform:uppercase}
+        #loading p{color:#555;font-size:0.8rem;letter-spacing:3px}
+
+        #lock{background:#0a0a0a;gap:16px}
+        #lock input{background:#111;border:1px solid #222;color:#fff;padding:12px;border-radius:12px;text-align:center;width:260px;outline:none;letter-spacing:2px}
+        #lock input:focus{border-color:#e50914}
+        #lock button{background:#e50914;color:#fff;border:none;padding:12px 40px;border-radius:12px;cursor:pointer;font-weight:600}
+        #lock .err{color:#e50914;font-size:0.8rem;display:none}
+
+        #error{background:#0a0a0a;gap:16px}
+        #error h2{color:#bbb;font-weight:500}
+        #error span{color:#555;font-size:0.8rem}
+
+        #playerWrap{width:100vw;height:100vh;position:relative;display:none}
+        #playerWrap.active{display:block}
+        #playerWrap iframe{width:100%;height:100%;border:none;position:absolute;top:0;left:0}
+
+        #playOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:50;display:flex;align-items:center;justify-content:center;cursor:pointer}
+        #playOverlay.hidden{display:none}
+        #playOverlay .btn{width:90px;height:90px;background:#e50914;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 50px rgba(229,9,20,0.6)}
+        #playOverlay .btn svg{width:38px;height:38px;fill:#fff;margin-left:5px}
+
+        #admin{background:#0a0a0a;min-height:100vh;padding:48px 32px;max-width:720px;margin:0 auto;display:none}
+        #admin.active{display:block}
+        #admin .logo{font-size:1.4rem;font-weight:700;color:#e50914;margin-bottom:36px}
+        #admin h2{color:#666;font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;margin-bottom:20px}
+        #admin table{width:100%;border-collapse:collapse}
+        #admin th{text-align:left;padding:12px;color:#555;font-size:0.7rem;border-bottom:1px solid #141414}
+        #admin td{padding:14px 12px;border-bottom:1px solid #0f0f0f;font-size:0.9rem}
+        #admin .kode{color:#e50914;font-weight:700;font-family:monospace;letter-spacing:2px}
+        #admin .link{color:#4caf50;text-decoration:none;font-size:0.8rem;word-break:break-all}
+        #admin .copy-btn{background:#111;border:1px solid #222;color:#888;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.75rem}
+        #admin .logout-btn{background:transparent;border:1px solid #333;color:#888;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:0.8rem;margin-bottom:28px}
         
-        .screen.lock{background:#0a0a0a;flex-direction:column;gap:16px;color:#fff;z-index:90}
-        .screen.lock svg{width:40px;height:40px;stroke:#555;fill:none;stroke-width:1.5}
-        .screen.lock h2{color:#777;font-size:1rem;font-weight:500}
-        .screen.lock input{background:#111;border:1px solid #222;color:#fff;padding:12px 20px;border-radius:12px;font-size:1rem;text-align:center;width:260px;outline:none;letter-spacing:2px}
-        .screen.lock input:focus{border-color:#e50914}
-        .screen.lock button{background:#e50914;color:#fff;border:none;padding:12px 40px;border-radius:12px;font-weight:600;font-size:0.9rem;cursor:pointer}
-        .screen.lock button:hover{background:#b2070f}
-        .screen.lock .err{color:#e50914;font-size:0.8rem;display:none}
-        .screen.lock .err.show{display:block}
-        
-        .screen.error{background:#0a0a0a;flex-direction:column;gap:16px;color:#fff;z-index:80}
-        .screen.error svg{width:48px;height:48px;stroke:#e50914;fill:none;stroke-width:1.5}
-        .screen.error h2{color:#bbb;font-size:1.1rem;font-weight:500}
-        .screen.error span{color:#555;font-size:0.8rem}
-        
-        .player-wrap{width:100%;height:100%;position:relative;background:#000}
-        .player-wrap iframe{width:100%;height:100%;border:none;position:absolute;top:0;left:0}
-        
-        .play-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:50;display:flex;align-items:center;justify-content:center;cursor:pointer}
-        .play-overlay.hidden{display:none}
-        .play-overlay .btn{width:90px;height:90px;background:#e50914;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 50px rgba(229,9,20,0.6);transition:transform 0.2s}
-        .play-overlay .btn:hover{transform:scale(1.1)}
-        .play-overlay .btn svg{width:38px;height:38px;fill:#fff;margin-left:5px}
-        
-        .admin-wrap{background:#0a0a0a;color:#fff;min-height:100vh;padding:48px 32px;max-width:720px;margin:0 auto;font-family:'Segoe UI',system-ui,sans-serif}
-        .admin-wrap .logo{font-size:1.4rem;font-weight:700;color:#e50914;margin-bottom:36px;display:flex;align-items:center;gap:10px}
-        .admin-wrap .logo svg{width:24px;height:24px;fill:#e50914}
-        .admin-wrap h2{font-weight:600;font-size:0.8rem;color:#666;text-transform:uppercase;letter-spacing:2px;margin-bottom:20px}
-        .admin-wrap .total{color:#555;font-size:0.85rem;margin-bottom:28px;font-weight:500}
-        .admin-wrap .total span{color:#e50914;font-weight:700}
-        .admin-wrap table{width:100%;border-collapse:collapse}
-        .admin-wrap th{text-align:left;padding:12px 16px;font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:#555;border-bottom:1px solid #141414;font-weight:600}
-        .admin-wrap td{padding:14px 16px;border-bottom:1px solid #0f0f0f;font-size:0.9rem}
-        .admin-wrap .kode{color:#e50914;font-weight:700;font-family:monospace;letter-spacing:2px;font-size:1rem}
-        .admin-wrap .link{color:#4caf50;text-decoration:none;font-size:0.8rem;word-break:break-all;font-weight:500}
-        .admin-wrap .link:hover{color:#66d9a0}
-        .admin-wrap .copy-btn{background:#111;border:1px solid #222;color:#888;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:0.75rem;font-weight:500;transition:all 0.2s;white-space:nowrap}
-        .admin-wrap .copy-btn:hover{border-color:#e50914;color:#e50914}
-        .admin-wrap .copy-btn.copied{background:#0a1f12;border-color:#4caf50;color:#4caf50}
-        .admin-wrap .logout-btn{background:transparent;border:1px solid #333;color:#888;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:0.8rem;transition:0.2s;margin-bottom:28px}
-        .admin-wrap .logout-btn:hover{border-color:#e50914;color:#e50914}
-        .admin-wrap .footer-note{margin-top:40px;padding-top:20px;border-top:1px solid #111;color:#333;font-size:0.75rem;text-align:center}
-        
-        @media(max-width:600px){
-            .admin-wrap{padding:28px 14px}
-            .admin-wrap th,.admin-wrap td{padding:10px 8px}
-            .admin-wrap .link{font-size:0.7rem}
-            .screen.lock input{width:220px}
-        }
+        @media(max-width:600px){#admin{padding:28px 14px}}
     </style>
 </head>
 <body>
 
-    <div class="screen loading active" id="loadingScreen">
+    <div class="screen active" id="loading">
         <div class="spinner"></div>
         <p>Memuat Video</p>
     </div>
 
-    <div class="screen lock" id="lockScreen">
-        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>
-        <h2>Akses Terbatas</h2>
+    <div class="screen" id="lock">
+        <svg viewBox="0 0 24 24" width="40" height="40" style="stroke:#555;fill:none;stroke-width:1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>
+        <h2 style="color:#777">Akses Terbatas</h2>
         <input type="password" id="passInput" placeholder="Masukkan password">
         <button id="loginBtn">Buka</button>
         <p class="err" id="loginError">Password salah</p>
     </div>
 
-    <div class="screen error" id="errorScreen">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <div class="screen" id="error">
+        <svg viewBox="0 0 24 24" width="48" height="48" style="stroke:#e50914;fill:none;stroke-width:1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         <h2>Video Tidak Ditemukan</h2>
-        <span>Periksa kembali URL yang Anda akses</span>
+        <span>URL tidak valid</span>
     </div>
 
-    <div class="player-wrap" id="playerWrap">
-        <div class="play-overlay" id="playOverlay">
+    <div id="playerWrap">
+        <div id="playOverlay">
             <div class="btn"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
         </div>
     </div>
 
-    <script>
-    (function(){
+    <div id="admin">
+        <div class="logo">▶ StreamingBox</div>
+        <button class="logout-btn" onclick="logout()">🔒 Keluar</button>
+        <p style="color:#555;margin-bottom:28px">Total <span id="totalVid" style="color:#e50914;font-weight:700"></span> video</p>
+        <h2>🔗 Kode Video</h2>
+        <table><thead><tr><th>Kode</th><th>URL</th><th></th></tr></thead><tbody id="tableBody"></tbody></table>
+        <p style="color:#333;text-align:center;margin-top:40px;font-size:0.75rem">Klik kode untuk menonton • Klik Salin untuk share</p>
+    </div>
 
+    <script>
     var PASSWORD = 'angker23';
     var AD_URL = 'https://violationsyllable.com/76/5c/65/765c65e3ed05321d3eb44dcdb69deb39.js';
     var HISTATS_ID = '5043867';
-    var STORAGE = 'sb3codes';
-
-    var videos = [];
+    var adDone = false;
+    
+    // ===== HARDCODE DATA VIDEO =====
+    var videos = [
+        "https://www.youtube.com/watch?v=g5ryt0ASFmU"
+    ];
+    
     var i2c = {};
     var c2i = {};
-    var adDone = false;
-
-    // ===== DOM =====
-    var loading = document.getElementById('loadingScreen');
-    var lock = document.getElementById('lockScreen');
-    var error = document.getElementById('errorScreen');
-    var player = document.getElementById('playerWrap');
-    var overlay = document.getElementById('playOverlay');
-    var passInput = document.getElementById('passInput');
-    var loginBtn = document.getElementById('loginBtn');
-    var loginError = document.getElementById('loginError');
-
-    // ===== SESSION =====
-    function isAdmin(){ return sessionStorage.getItem('sb3')==='1'; }
-    function setAdmin(){ sessionStorage.setItem('sb3','1'); }
-    function clearAdmin(){ sessionStorage.removeItem('sb3'); }
-
-    // ===== LOGIN =====
-    loginBtn.onclick = function(){
-        if(passInput.value === PASSWORD){
-            setAdmin();
-            loginError.classList.remove('show');
-            showAdmin();
-        }else{
-            loginError.classList.add('show');
-            passInput.value = '';
-            passInput.focus();
-        }
-    };
-    passInput.addEventListener('keydown',function(e){
-        if(e.key==='Enter') loginBtn.click();
-    });
-
-    // ===== CODES =====
     var CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
     function rand4(){
         var s='';
         for(var i=0;i<4;i++) s+=CHARS[Math.floor(Math.random()*52)];
         return s;
     }
+
     function loadCodes(){
-        try{ var d=localStorage.getItem(STORAGE); return d?JSON.parse(d):{}; }catch(e){ return{}; }
+        var d=localStorage.getItem('sb_final');
+        return d?JSON.parse(d):{};
     }
+
     function saveCodes(obj){
-        try{ localStorage.setItem(STORAGE,JSON.stringify(obj)); }catch(e){}
+        localStorage.setItem('sb_final',JSON.stringify(obj));
     }
-    function genCodes(list){
-        var data = loadCodes();
-        var used = {};
+
+    function genCodes(){
+        var data=loadCodes();
+        var used={};
         for(var k in data) used[data[k]]=true;
         var changed=false;
-        for(var i=0;i<list.length;i++){
+        for(var i=0;i<videos.length;i++){
             if(!data[i]){
                 var c;
                 do{c=rand4();}while(used[c]);
@@ -166,161 +132,128 @@
                 changed=true;
             }
         }
-        var max=list.length-1;
-        for(var k in data){
-            if(parseInt(k)>max){ delete data[k]; changed=true; }
-        }
         if(changed) saveCodes(data);
         return data;
     }
 
-    // ===== URL =====
     function getCode(){
         return window.location.pathname.replace(/^\/+|\/+$/g,'')||null;
     }
 
-    // ===== YOUTUBE =====
     function getYTID(url){
         var m=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]+)/);
         return m?m[1]:null;
     }
 
-    // ===== ADS =====
     function triggerAds(){
         if(adDone) return;
         adDone=true;
-
-        window._Hasync = window._Hasync || [];
+        window._Hasync=window._Hasync||[];
         _Hasync.push(['Histats.start','1,'+HISTATS_ID+',4,0,0,0,00010000']);
         _Hasync.push(['Histats.fasi','1']);
         _Hasync.push(['Histats.track_hits','']);
         var hs=document.createElement('script');hs.async=true;
         hs.src='//s10.histats.com/js15_as.js';
         document.head.appendChild(hs);
-
         var ad=document.createElement('script');
         ad.src=AD_URL;
         document.head.appendChild(ad);
-
         setTimeout(function(){
             var w=window.open('about:blank','_blank');
-            if(w){
-                w.document.write('<html><head><script src="'+AD_URL+'"></script></head><body></body></html>');
-                w.document.close();
-                setTimeout(function(){window.focus();},1500);
-            }
+            if(w){w.document.write('<html><head><script src="'+AD_URL+'"></script></head><body></body></html>');w.document.close();setTimeout(function(){window.focus();},1500);}
         },500);
     }
 
-    // ===== PLAY =====
-    function play(url){
-        loading.classList.remove('active');
+    function playVideo(url){
+        document.getElementById('loading').classList.remove('active');
+        document.getElementById('playerWrap').classList.add('active');
         var yt=getYTID(url);
         if(yt){
-            var old=document.getElementById('ytf');
-            if(old) old.remove();
             var f=document.createElement('iframe');
-            f.id='ytf';
             f.src='https://www.youtube.com/embed/'+yt+'?autoplay=1&rel=0&modestbranding=1';
             f.allow='autoplay; encrypted-media; fullscreen';
             f.allowFullscreen=true;
-            player.appendChild(f);
+            f.style.cssText='width:100%;height:100%;border:none;position:absolute;top:0;left:0;';
+            document.getElementById('playerWrap').appendChild(f);
         }else{
-            loading.classList.remove('active');
-            error.classList.add('active');
-            player.style.display='none';
+            document.getElementById('loading').classList.remove('active');
+            document.getElementById('error').classList.add('active');
         }
     }
 
-    overlay.addEventListener('click',function(){
-        overlay.classList.add('hidden');
-        triggerAds();
-    });
-
-    // ===== ADMIN =====
     function showAdmin(){
-        loading.classList.remove('active');
-        player.style.display='none';
-        lock.classList.remove('active');
-        overlay.classList.add('hidden');
-
+        document.getElementById('loading').classList.remove('active');
+        document.getElementById('lock').classList.remove('active');
+        document.getElementById('admin').classList.add('active');
+        document.getElementById('totalVid').textContent=videos.length;
         var rows='';
         for(var i=0;i<videos.length;i++){
             var k=i2c[i]||'????';
             var l=location.origin+'/'+k;
             rows+='<tr><td><span class="kode">'+k+'</span></td><td><a href="'+l+'" class="link" target="_blank">'+l+'</a></td><td><button class="copy-btn" data-link="'+l+'">Salin</button></td></tr>';
         }
-
-        document.body.innerHTML='<div class="admin-wrap"><div class="logo"><svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg> StreamingBox</div><button class="logout-btn" id="logoutBtn">🔒 Keluar</button><p class="total">Total <span>'+videos.length+'</span> video tersedia</p><h2>🔗 Kode Video</h2><table><thead><tr><th>Kode</th><th>URL Tonton</th><th></th></tr></thead><tbody>'+rows+'</tbody></table><p class="footer-note">Klik kode untuk menonton • Klik Salin untuk share</p></div>';
-
-        document.addEventListener('click',function(e){
-            if(e.target.classList.contains('copy-btn')){
-                var link=e.target.getAttribute('data-link');
-                navigator.clipboard.writeText(link).then(function(){
-                    e.target.textContent='✓ Tersalin';
-                    e.target.classList.add('copied');
-                    setTimeout(function(){e.target.textContent='Salin';e.target.classList.remove('copied');},2000);
-                }).catch(function(){
-                    var ta=document.createElement('textarea');ta.value=link;
-                    ta.style.cssText='position:fixed;opacity:0;';document.body.appendChild(ta);
-                    ta.select();document.execCommand('copy');document.body.removeChild(ta);
-                    e.target.textContent='✓ Tersalin';
-                    e.target.classList.add('copied');
-                    setTimeout(function(){e.target.textContent='Salin';e.target.classList.remove('copied');},2000);
+        document.getElementById('tableBody').innerHTML=rows;
+        
+        document.querySelectorAll('.copy-btn').forEach(function(btn){
+            btn.addEventListener('click',function(){
+                var link=this.getAttribute('data-link');
+                navigator.clipboard.writeText(link).then(()=>{
+                    this.textContent='✓ Tersalin';
+                    setTimeout(()=>{this.textContent='Salin';},2000);
                 });
-            }
-            if(e.target.id==='logoutBtn'){
-                clearAdmin();
-                location.href='/';
-            }
+            });
         });
     }
 
-    function showLock(){
-        loading.classList.remove('active');
-        player.style.display='none';
-        lock.classList.add('active');
-        passInput.value='';
-        loginError.classList.remove('show');
-        passInput.focus();
-    }
+    window.logout = function(){
+        sessionStorage.removeItem('sb_admin');
+        location.href='/';
+    };
 
     // ===== INIT =====
     function init(){
-        fetch('data.json')
-        .then(function(r){return r.json();})
-        .then(function(data){
-            if(!Array.isArray(data)||data.length===0) throw new Error('kosong');
-            videos=data;
-            var codes=genCodes(videos);
-            i2c={};c2i={};
-            for(var k in codes){
-                i2c[k]=codes[k];
-                c2i[codes[k]]=parseInt(k);
-            }
-            var code=getCode();
-            if(code&&c2i[code]!==undefined){
-                play(videos[c2i[code]]);
-            }else if(isAdmin()){
-                showAdmin();
-            }else{
-                showLock();
-            }
-        })
-        .catch(function(){
-            loading.classList.remove('active');
-            error.classList.add('active');
-            player.style.display='none';
-        });
+        var codes=genCodes();
+        for(var k in codes){
+            i2c[k]=codes[k];
+            c2i[codes[k]]=parseInt(k);
+        }
+        var code=getCode();
+        if(code && c2i[code]!==undefined){
+            playVideo(videos[c2i[code]]);
+        }else if(sessionStorage.getItem('sb_admin')==='1'){
+            showAdmin();
+        }else{
+            document.getElementById('loading').classList.remove('active');
+            document.getElementById('lock').classList.add('active');
+            document.getElementById('passInput').focus();
+        }
     }
+
+    document.getElementById('loginBtn').addEventListener('click',function(){
+        if(document.getElementById('passInput').value===PASSWORD){
+            sessionStorage.setItem('sb_admin','1');
+            document.getElementById('loginError').style.display='none';
+            showAdmin();
+        }else{
+            document.getElementById('loginError').style.display='block';
+            document.getElementById('passInput').value='';
+        }
+    });
+
+    document.getElementById('passInput').addEventListener('keydown',function(e){
+        if(e.key==='Enter') document.getElementById('loginBtn').click();
+    });
+
+    document.getElementById('playOverlay').addEventListener('click',function(){
+        this.classList.add('hidden');
+        triggerAds();
+    });
 
     if(document.readyState==='loading'){
         document.addEventListener('DOMContentLoaded',init);
     }else{
         init();
     }
-
-    })();
     </script>
 </body>
 </html>
