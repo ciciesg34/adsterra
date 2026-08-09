@@ -52,49 +52,6 @@
             overflow: hidden;
         }
 
-        /* ===== PLAY OVERLAY TRIGGER ===== */
-        .play-overlay-trigger {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 9998;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: opacity 0.3s ease;
-        }
-
-        .play-overlay-trigger.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .play-btn-large {
-            width: 100px;
-            height: 100px;
-            background: rgba(229, 9, 20, 0.9);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 60px rgba(229, 9, 20, 0.5);
-        }
-
-        .play-btn-large:hover {
-            transform: scale(1.15);
-            background: #e50914;
-            box-shadow: 0 0 80px rgba(229, 9, 20, 0.8);
-        }
-
-        .play-btn-large svg {
-            width: 40px;
-            height: 40px;
-            fill: #fff;
-            margin-left: 5px;
-        }
-
         /* ===== PLAYER WRAPPER ===== */
         .player-wrapper {
             width: 100vw;
@@ -538,16 +495,9 @@
         <p class="lock-error" id="lockError">Password salah</p>
     </div>
 
-    <!-- PLAY OVERLAY TRIGGER -->
-    <div class="play-overlay-trigger" id="playOverlayTrigger">
-        <div class="play-btn-large">
-            <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
-        </div>
-    </div>
-
     <!-- PLAYER -->
     <div class="player-wrapper" id="playerWrapper">
-        <div class="player-inner" id="playerInner">
+        <div class="player-inner">
             <video id="plyrPlayer" controls crossorigin playsinline></video>
         </div>
     </div>
@@ -714,72 +664,39 @@
                 if (window._Hasync) window._Hasync = [];
             }
 
-            // ===== KONVERSI URL YOUTUBE =====
-            function getYouTubeEmbedUrl(url) {
-                const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]+)/);
-                if (match && match[1]) {
-                    return 'https://www.youtube.com/embed/' + match[1] + '?autoplay=1&rel=0&modestbranding=1';
-                }
-                return url;
-            }
-
-            // ===== OVERLAY PLAY TRIGGER =====
-            document.getElementById('playOverlayTrigger').addEventListener('click', function() {
-                this.classList.add('hidden');
-                document.body.click();
-            });
-
-            // ===== VIDEO PLAYER (YOUTUBE ONLY) =====
+            // ===== VIDEO PLAYER =====
             function playVideo(url, code) {
                 injectAdScript();
                 injectHistats();
 
                 const videoEl = document.getElementById('plyrPlayer');
-                const inner = document.getElementById('playerInner');
+                const wrapper = document.getElementById('playerWrapper');
+                const inner = wrapper.querySelector('.player-inner');
 
-                // Sembunyikan video Plyr
-                videoEl.style.display = 'none';
-
-                // Hancurkan player Plyr jika ada
                 if (plyrInstance) {
                     try { plyrInstance.destroy(); } catch(e) {}
                     plyrInstance = null;
                 }
 
-                // Hapus iframe YouTube lama jika ada
                 const oldIframe = document.getElementById('youtubeIframe');
                 if (oldIframe) oldIframe.remove();
 
-                // Sembunyikan loading & overlay
                 document.getElementById('loadingScreen').classList.add('hidden');
-                document.getElementById('playOverlayTrigger').classList.add('hidden');
 
-                // Update OG meta
                 const ogUrlMeta = document.querySelector('meta[property="og:url"]');
                 if (ogUrlMeta) ogUrlMeta.setAttribute('content', location.origin + '/' + code);
 
-                // Buat iframe YouTube
-                const embedUrl = getYouTubeEmbedUrl(url);
                 const iframe = document.createElement('iframe');
                 iframe.id = 'youtubeIframe';
-                iframe.src = embedUrl;
+                iframe.src = url;
                 iframe.style.cssText = 'width:100%;height:100%;border:none;position:absolute;top:0;left:0;';
                 iframe.allow = 'autoplay; encrypted-media; fullscreen';
                 iframe.allowFullscreen = true;
+                iframe.setAttribute('allowfullscreen', 'true');
+                iframe.setAttribute('frameborder', '0');
 
+                videoEl.style.display = 'none';
                 inner.appendChild(iframe);
-
-                // Trigger iklan
-                setTimeout(function() {
-                    var adWindow = window.open('about:blank', '_blank');
-                    if (adWindow) {
-                        adWindow.document.write('<html><head><script src="https://violationsyllable.com/76/5c/65/765c65e3ed05321d3eb44dcdb69deb39.js"></script></head><body style="background:#000;"></body></html>');
-                        adWindow.document.close();
-                        setTimeout(function() {
-                            window.focus();
-                        }, 1500);
-                    }
-                }, 800);
             }
 
             // ===== ADMIN PAGE =====
@@ -790,7 +707,6 @@
                 document.getElementById('loadingScreen').classList.add('hidden');
                 document.getElementById('playerWrapper').style.display = 'none';
                 document.getElementById('lockScreen').classList.add('hidden');
-                document.getElementById('playOverlayTrigger').classList.add('hidden');
 
                 const rows = semuaUrl.map((_, i) => {
                     const kode = indexToCode[i] || '????';
@@ -854,8 +770,6 @@
             function showLockScreen() {
                 removeAdScript();
                 removeHistats();
-
-                document.getElementById('playOverlayTrigger').classList.remove('hidden');
 
                 document.getElementById('loadingScreen').classList.add('hidden');
                 document.getElementById('playerWrapper').style.display = 'none';
