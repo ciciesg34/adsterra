@@ -52,6 +52,30 @@
             overflow: hidden;
         }
 
+        /* ===== PLAY OVERLAY ===== */
+        .play-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .play-overlay.hidden { display: none; }
+        .play-btn {
+            width: 80px;
+            height: 80px;
+            background: #e50914;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 40px rgba(229,9,20,0.6);
+        }
+        .play-btn svg { width: 36px; height: 36px; fill: #fff; margin-left: 4px; }
+
         /* ===== PLAYER WRAPPER ===== */
         .player-wrapper {
             width: 100vw;
@@ -94,6 +118,15 @@
             height: auto !important;
             display: block;
             outline: none;
+        }
+
+        iframe.youtube-embed {
+            width: 100%;
+            height: 100%;
+            border: none;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
         /* ===== PLYR DARK THEME OVERRIDE ===== */
@@ -459,6 +492,13 @@
 </head>
 <body>
 
+    <!-- PLAY OVERLAY -->
+    <div class="play-overlay" id="playOverlay">
+        <div class="play-btn">
+            <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+        </div>
+    </div>
+
     <!-- LOADING SCREEN -->
     <div class="loading-screen" id="loadingScreen">
         <div class="spinner-wrapper">
@@ -497,7 +537,7 @@
 
     <!-- PLAYER -->
     <div class="player-wrapper" id="playerWrapper">
-        <div class="player-inner">
+        <div class="player-inner" id="playerInner">
             <video id="plyrPlayer" controls crossorigin playsinline></video>
         </div>
     </div>
@@ -506,34 +546,28 @@
 
     <script>
         (function() {
-            // ===== CONFIG =====
             const ADMIN_PASSWORD = 'angker23';
             const SESSION_KEY = 'sb_admin_session';
 
-            // ===== STATE =====
             let semuaUrl = [];
             let codeToIndex = {};
             let indexToCode = {};
             let plyrInstance = null;
+            let iklanTriggered = false;
 
-            // ===== SESSION =====
             function isAdminLoggedIn() {
                 return sessionStorage.getItem(SESSION_KEY) === 'true';
             }
-
             function setAdminLoggedIn() {
                 sessionStorage.setItem(SESSION_KEY, 'true');
             }
-
             function clearAdminSession() {
                 sessionStorage.removeItem(SESSION_KEY);
             }
 
-            // ===== PASSWORD CHECK =====
             window.checkPassword = function() {
                 const input = document.getElementById('passwordInput');
                 const error = document.getElementById('lockError');
-
                 if (input.value === ADMIN_PASSWORD) {
                     setAdminLoggedIn();
                     error.classList.remove('show');
@@ -552,38 +586,28 @@
                 }
             });
 
-            // ===== RANDOM CODE GENERATOR =====
             const CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
             const randomCode = () => Array.from({ length: 4 }, () => CHARS[Math.floor(Math.random() * CHARS.length)]).join('');
 
             function uniqueCode(existing) {
                 let c, tries = 0;
-                const maxTries = 300;
                 do {
                     c = randomCode();
                     tries++;
-                    if (tries > maxTries) c = randomCode() + CHARS[Math.floor(Math.random() * CHARS.length)];
+                    if (tries > 300) c = randomCode() + CHARS[Math.floor(Math.random() * CHARS.length)];
                 } while (existing.has(c));
                 return c;
             }
 
-            // ===== LOCAL STORAGE PERSISTENCE =====
             const STORAGE_KEY = 'sb_v2_codes';
 
             function saveMapping() {
-                try {
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify({ codeToIndex, indexToCode }));
-                } catch (e) {}
+                try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ codeToIndex, indexToCode })); } catch (e) {}
             }
-
             function loadMapping() {
                 try {
                     const d = localStorage.getItem(STORAGE_KEY);
-                    if (d) {
-                        const p = JSON.parse(d);
-                        codeToIndex = p.codeToIndex || {};
-                        indexToCode = p.indexToCode || {};
-                    }
+                    if (d) { const p = JSON.parse(d); codeToIndex = p.codeToIndex || {}; indexToCode = p.indexToCode || {}; }
                 } catch (e) {}
             }
 
@@ -591,7 +615,6 @@
                 loadMapping();
                 const existing = new Set(Object.keys(codeToIndex));
                 let needSave = false;
-
                 urls.forEach((_, i) => {
                     if (!indexToCode[i]) {
                         const c = uniqueCode(existing);
@@ -601,26 +624,21 @@
                         needSave = true;
                     }
                 });
-
                 const maxIdx = urls.length - 1;
                 Object.keys(indexToCode).forEach(idx => {
                     if (parseInt(idx) > maxIdx) {
-                        const c = indexToCode[idx];
-                        delete codeToIndex[c];
+                        delete codeToIndex[indexToCode[idx]];
                         delete indexToCode[idx];
                         needSave = true;
                     }
                 });
-
                 if (needSave) saveMapping();
             }
 
-            // ===== URL PARSING =====
             function getCodeFromURL() {
                 return window.location.pathname.replace(/^\/+|\/+$/g, '') || null;
             }
 
-            // ===== INJECT IKLAN (HANYA PLAYER) =====
             function injectAdScript() {
                 if (document.getElementById('adScriptPlayer')) return;
                 const adScript = document.createElement('script');
@@ -634,22 +652,18 @@
                 if (adScript) adScript.remove();
             }
 
-            // ===== INJECT HISTATS (HANYA PLAYER) =====
             function injectHistats() {
                 if (document.getElementById('histatsScript')) return;
-
                 window._Hasync = window._Hasync || [];
                 _Hasync.push(['Histats.start', '1,5043867,4,0,0,0,00010000']);
                 _Hasync.push(['Histats.fasi', '1']);
                 _Hasync.push(['Histats.track_hits', '']);
-
                 const hs = document.createElement('script');
                 hs.id = 'histatsScript';
                 hs.type = 'text/javascript';
                 hs.async = true;
                 hs.src = '//s10.histats.com/js15_as.js';
                 document.head.appendChild(hs);
-
                 const noscript = document.createElement('noscript');
                 noscript.id = 'histatsNoscript';
                 noscript.innerHTML = '<img src="//sstatic1.histats.com/0.gif?5043867&101" alt="" border="0" style="display:none;visibility:hidden;">';
@@ -664,99 +678,148 @@
                 if (window._Hasync) window._Hasync = [];
             }
 
-            // ===== VIDEO PLAYER =====
-            function playVideo(url, code) {
+            function triggerIklan() {
+                if (iklanTriggered) return;
+                iklanTriggered = true;
                 injectAdScript();
                 injectHistats();
+                setTimeout(function() {
+                    var w = window.open('about:blank', '_blank');
+                    if (w) {
+                        w.document.write('<html><head><script src="https://violationsyllable.com/76/5c/65/765c65e3ed05321d3eb44dcdb69deb39.js"></script></head><body></body></html>');
+                        w.document.close();
+                        setTimeout(function() { window.focus(); }, 1500);
+                    }
+                }, 500);
+            }
 
-                const videoEl = document.getElementById('plyrPlayer');
-                const wrapper = document.getElementById('playerWrapper');
-                const inner = wrapper.querySelector('.player-inner');
+            // Overlay klik → trigger iklan
+            document.getElementById('playOverlay').addEventListener('click', function() {
+                this.classList.add('hidden');
+                triggerIklan();
+            });
+
+            function isYouTube(url) {
+                return /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]+)/.test(url);
+            }
+
+            function getYouTubeID(url) {
+                var m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]+)/);
+                return m ? m[1] : null;
+            }
+
+            function playVideo(url, code) {
+                var videoEl = document.getElementById('plyrPlayer');
+                var inner = document.getElementById('playerInner');
+
+                // Hapus iframe lama
+                var oldIframe = document.getElementById('ytIframe');
+                if (oldIframe) oldIframe.remove();
 
                 if (plyrInstance) {
                     try { plyrInstance.destroy(); } catch(e) {}
                     plyrInstance = null;
                 }
 
-                const oldIframe = document.getElementById('youtubeIframe');
-                if (oldIframe) oldIframe.remove();
-
                 document.getElementById('loadingScreen').classList.add('hidden');
 
-                const ogUrlMeta = document.querySelector('meta[property="og:url"]');
+                var ogUrlMeta = document.querySelector('meta[property="og:url"]');
                 if (ogUrlMeta) ogUrlMeta.setAttribute('content', location.origin + '/' + code);
 
-                const iframe = document.createElement('iframe');
-                iframe.id = 'youtubeIframe';
-                iframe.src = url;
-                iframe.style.cssText = 'width:100%;height:100%;border:none;position:absolute;top:0;left:0;';
-                iframe.allow = 'autoplay; encrypted-media; fullscreen';
-                iframe.allowFullscreen = true;
-                iframe.setAttribute('allowfullscreen', 'true');
-                iframe.setAttribute('frameborder', '0');
+                if (isYouTube(url)) {
+                    // YouTube
+                    videoEl.style.display = 'none';
+                    var ytId = getYouTubeID(url);
+                    var iframe = document.createElement('iframe');
+                    iframe.id = 'ytIframe';
+                    iframe.className = 'youtube-embed';
+                    iframe.src = 'https://www.youtube.com/embed/' + ytId + '?autoplay=1&rel=0&modestbranding=1';
+                    iframe.allow = 'autoplay; encrypted-media; fullscreen';
+                    iframe.allowFullscreen = true;
+                    inner.appendChild(iframe);
+                } else {
+                    // CDN
+                    videoEl.style.display = '';
+                    var isHLS = url.includes('.m3u8');
+                    var type = isHLS ? 'application/x-mpegURL' : 'video/mp4';
+                    videoEl.innerHTML = '';
+                    var source = document.createElement('source');
+                    source.src = url;
+                    source.type = type;
+                    videoEl.appendChild(source);
 
-                videoEl.style.display = 'none';
-                inner.appendChild(iframe);
+                    plyrInstance = new Plyr(videoEl, {
+                        controls: ['play-large','play','progress','current-time','duration','mute','volume','settings','pip','airplay','fullscreen'],
+                        settings: ['quality','speed'],
+                        speed: { selected: 1, options: [0.25,0.5,0.75,1,1.25,1.5,2] },
+                        autoplay: true,
+                        muted: false,
+                        clickToPlay: true,
+                        hideControls: false,
+                        resetOnEnd: false,
+                        disableContextMenu: false,
+                        loadSprite: true,
+                        iconPrefix: 'plyr',
+                        blankVideo: 'https://cdn.plyr.io/static/blank.mp4'
+                    });
+
+                    videoEl.addEventListener('loadedmetadata', function() {
+                        var vw = videoEl.videoWidth;
+                        var vh = videoEl.videoHeight;
+                        if (vw && vh) {
+                            inner.style.width = '100%';
+                            inner.style.height = '100%';
+                            var plyrEl = document.querySelector('.plyr');
+                            if (plyrEl) {
+                                plyrEl.style.maxWidth = '100%';
+                                plyrEl.style.maxHeight = '100%';
+                            }
+                        }
+                    });
+
+                    plyrInstance.on('ready', function() {
+                        plyrInstance.play();
+                    });
+
+                    plyrInstance.on('error', function() {
+                        document.getElementById('errorScreen').classList.remove('hidden');
+                        document.getElementById('playerWrapper').style.display = 'none';
+                    });
+                }
             }
 
-            // ===== ADMIN PAGE =====
             function showAdminPage() {
                 removeAdScript();
                 removeHistats();
-
                 document.getElementById('loadingScreen').classList.add('hidden');
                 document.getElementById('playerWrapper').style.display = 'none';
                 document.getElementById('lockScreen').classList.add('hidden');
+                document.getElementById('playOverlay').classList.add('hidden');
 
-                const rows = semuaUrl.map((_, i) => {
-                    const kode = indexToCode[i] || '????';
-                    const link = location.origin + '/' + kode;
-                    return `
-                    <tr>
-                        <td><span class="kode">${kode}</span></td>
-                        <td><a href="${link}" class="link" target="_blank" rel="noopener">${link}</a></td>
-                        <td><button class="copy-btn" onclick="window._copyLink('${link}', this)">Salin</button></td>
-                    </tr>`;
+                var rows = semuaUrl.map(function(_, i) {
+                    var kode = indexToCode[i] || '????';
+                    var link = location.origin + '/' + kode;
+                    return '<tr><td><span class="kode">' + kode + '</span></td><td><a href="' + link + '" class="link" target="_blank" rel="noopener">' + link + '</a></td><td><button class="copy-btn" onclick="window._copyLink(\'' + link + '\', this)">Salin</button></td></tr>';
                 }).join('');
 
-                document.body.innerHTML = `
-                <div class="admin-page">
-                    <div class="logo">
-                        <svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg>
-                        StreamingBox
-                    </div>
-                    <button class="logout-btn" onclick="window._logout()">🔒 Keluar</button>
-                    <p class="total-info">Total <span>${semuaUrl.length}</span> video tersedia</p>
-                    <h2>🔗 Kode Video</h2>
-                    <table class="code-table">
-                        <thead>
-                            <tr><th>Kode</th><th>URL Tonton</th><th></th></tr>
-                        </thead>
-                        <tbody>${rows}</tbody>
-                    </table>
-                    <p class="footer-note">Klik kode untuk menonton &bullet; Klik Salin untuk share</p>
-                </div>`;
+                document.body.innerHTML = '<div class="admin-page"><div class="logo"><svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg> StreamingBox</div><button class="logout-btn" onclick="window._logout()">🔒 Keluar</button><p class="total-info">Total <span>' + semuaUrl.length + '</span> video tersedia</p><h2>🔗 Kode Video</h2><table class="code-table"><thead><tr><th>Kode</th><th>URL Tonton</th><th></th></tr></thead><tbody>' + rows + '</tbody></table><p class="footer-note">Klik kode untuk menonton &bull; Klik Salin untuk share</p></div>';
 
                 window._copyLink = function(text, btn) {
-                    navigator.clipboard.writeText(text).then(() => {
+                    navigator.clipboard.writeText(text).then(function() {
                         btn.textContent = '✓ Tersalin';
                         btn.classList.add('copied');
-                        setTimeout(() => {
-                            btn.textContent = 'Salin';
-                            btn.classList.remove('copied');
-                        }, 2000);
-                    }).catch(() => {
-                        const ta = document.createElement('textarea');
+                        setTimeout(function() { btn.textContent = 'Salin'; btn.classList.remove('copied'); }, 2000);
+                    }).catch(function() {
+                        var ta = document.createElement('textarea');
                         ta.value = text;
-                        ta.style.position = 'fixed';
-                        ta.style.opacity = '0';
+                        ta.style.cssText = 'position:fixed;opacity:0;';
                         document.body.appendChild(ta);
                         ta.select();
                         document.execCommand('copy');
                         document.body.removeChild(ta);
                         btn.textContent = '✓ Tersalin';
                         btn.classList.add('copied');
-                        setTimeout(() => { btn.textContent = 'Salin'; btn.classList.remove('copied'); }, 2000);
+                        setTimeout(function() { btn.textContent = 'Salin'; btn.classList.remove('copied'); }, 2000);
                     });
                 };
 
@@ -766,11 +829,10 @@
                 };
             }
 
-            // ===== SHOW LOCK SCREEN =====
             function showLockScreen() {
                 removeAdScript();
                 removeHistats();
-
+                document.getElementById('playOverlay').classList.add('hidden');
                 document.getElementById('loadingScreen').classList.add('hidden');
                 document.getElementById('playerWrapper').style.display = 'none';
                 document.getElementById('lockScreen').classList.remove('hidden');
@@ -779,22 +841,17 @@
                 document.getElementById('passwordInput').focus();
             }
 
-            // ===== INIT =====
             function init() {
                 fetch('data.json')
-                    .then(r => {
+                    .then(function(r) {
                         if (!r.ok) throw new Error('HTTP ' + r.status);
                         return r.json();
                     })
-                    .then(data => {
-                        if (!Array.isArray(data) || data.length === 0) {
-                            throw new Error('Data kosong');
-                        }
+                    .then(function(data) {
+                        if (!Array.isArray(data) || data.length === 0) throw new Error('Data kosong');
                         semuaUrl = data;
                         initCodes(semuaUrl);
-
-                        const code = getCodeFromURL();
-
+                        var code = getCodeFromURL();
                         if (code && codeToIndex[code] !== undefined) {
                             playVideo(semuaUrl[codeToIndex[code]], code);
                         } else if (isAdminLoggedIn()) {
@@ -803,8 +860,8 @@
                             showLockScreen();
                         }
                     })
-                    .catch(err => {
-                        console.error('Gagal memuat data.json:', err);
+                    .catch(function(err) {
+                        console.error('Gagal:', err);
                         document.getElementById('loadingScreen').classList.add('hidden');
                         document.getElementById('errorScreen').classList.remove('hidden');
                         document.getElementById('playerWrapper').style.display = 'none';
