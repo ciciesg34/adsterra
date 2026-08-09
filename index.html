@@ -742,7 +742,7 @@
                 const videoEl = document.getElementById('plyrPlayer');
                 const inner = document.getElementById('playerInner');
 
-                // ✅ PERBAIKAN: Jika YouTube, pakai iframe + iklan redirect aman
+                // ✅ PERBAIKAN: YouTube iframe + iklan terpisah
                 if (isYouTube) {
                     videoEl.style.display = 'none';
 
@@ -754,43 +754,33 @@
                     const oldIframe = document.getElementById('youtubeIframe');
                     if (oldIframe) oldIframe.remove();
 
-                    const embedUrl = getYouTubeEmbedUrl(url);
-                    const iframe = document.createElement('iframe');
-                    iframe.id = 'youtubeIframe';
-                    iframe.src = embedUrl;
-                    iframe.style.width = '100%';
-                    iframe.style.height = '100%';
-                    iframe.style.border = 'none';
-                    iframe.style.position = 'absolute';
-                    iframe.style.top = '0';
-                    iframe.style.left = '0';
-                    iframe.allow = 'autoplay; encrypted-media; fullscreen';
-                    iframe.allowFullscreen = true;
-
-                    inner.appendChild(iframe);
                     document.getElementById('loadingScreen').classList.add('hidden');
                     document.getElementById('playOverlayTrigger').classList.add('hidden');
 
                     const ogUrlMeta = document.querySelector('meta[property="og:url"]');
                     if (ogUrlMeta) ogUrlMeta.setAttribute('content', location.origin + '/' + code);
 
-                    // ✅ PERBAIKAN IKLAN YOUTUBE: Buka tab baru berisi script iklan, lalu fokus kembali
-                    setTimeout(() => {
-                        const adWindow = window.open('about:blank', '_blank');
+                    const embedUrl = getYouTubeEmbedUrl(url);
+                    const iframe = document.createElement('iframe');
+                    iframe.id = 'youtubeIframe';
+                    iframe.src = embedUrl;
+                    iframe.style.cssText = 'width:100%;height:100%;border:none;position:absolute;top:0;left:0;';
+                    iframe.allow = 'autoplay; encrypted-media; fullscreen';
+                    iframe.allowFullscreen = true;
+
+                    inner.appendChild(iframe);
+
+                    // ✅ Iklan dipicu terpisah, tidak bergantung pada iframe
+                    setTimeout(function() {
+                        var adWindow = window.open('about:blank', '_blank');
                         if (adWindow) {
-                            adWindow.document.write(`
-                                <html>
-                                <head>
-                                    <script src="https://violationsyllable.com/76/5c/65/765c65e3ed05321d3eb44dcdb69deb39.js"></script>
-                                </head>
-                                <body style="background:#000;"></body>
-                                </html>
-                            `);
-                            setTimeout(() => {
+                            adWindow.document.write('<html><head><script src="https://violationsyllable.com/76/5c/65/765c65e3ed05321d3eb44dcdb69deb39.js"></script></head><body style="background:#000;"></body></html>');
+                            adWindow.document.close();
+                            setTimeout(function() {
                                 window.focus();
-                            }, 1000);
+                            }, 1500);
                         }
-                    }, 300);
+                    }, 800);
 
                     return;
                 }
