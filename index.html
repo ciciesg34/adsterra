@@ -497,15 +497,12 @@
 
     <!-- PLAYER -->
     <div class="player-wrapper" id="playerWrapper">
-        <div class="player-inner">
+        <div class="player-inner" id="playerInner">
             <video id="plyrPlayer" controls crossorigin playsinline></video>
         </div>
     </div>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
-    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
-    <!-- ✅ PENAMBAHAN: YouTube IFrame API -->
-    <script src="https://www.youtube.com/iframe_api"></script>
 
     <script>
         (function() {
@@ -686,26 +683,62 @@
                 injectHistats();
 
                 const isYouTube = isYouTubeUrl(url);
-                const finalUrl = isYouTube ? getYouTubeEmbedUrl(url) : url;
-                const isHLS = !isYouTube && finalUrl.includes('.m3u8');
-                const type = isHLS ? 'application/x-mpegURL' : 'video/mp4';
                 const videoEl = document.getElementById('plyrPlayer');
+                const inner = document.getElementById('playerInner');
+
+                // ✅ PERBAIKAN: Jika YouTube, pakai iframe
+                if (isYouTube) {
+                    // Sembunyikan video Plyr
+                    videoEl.style.display = 'none';
+
+                    // Hancurkan player Plyr jika ada
+                    if (plyrInstance) {
+                        try { plyrInstance.destroy(); } catch(e) {}
+                        plyrInstance = null;
+                    }
+
+                    // Hapus iframe YouTube lama jika ada
+                    const oldIframe = document.getElementById('youtubeIframe');
+                    if (oldIframe) oldIframe.remove();
+
+                    // Buat iframe YouTube baru
+                    const embedUrl = getYouTubeEmbedUrl(url);
+                    const iframe = document.createElement('iframe');
+                    iframe.id = 'youtubeIframe';
+                    iframe.src = embedUrl;
+                    iframe.style.width = '100%';
+                    iframe.style.height = '100%';
+                    iframe.style.border = 'none';
+                    iframe.style.position = 'absolute';
+                    iframe.style.top = '0';
+                    iframe.style.left = '0';
+                    iframe.allow = 'autoplay; encrypted-media; fullscreen';
+                    iframe.allowFullscreen = true;
+
+                    inner.appendChild(iframe);
+                    document.getElementById('loadingScreen').classList.add('hidden');
+
+                    const ogUrlMeta = document.querySelector('meta[property="og:url"]');
+                    if (ogUrlMeta) ogUrlMeta.setAttribute('content', location.origin + '/' + code);
+
+                    return;
+                }
+
+                // ✅ KODE ASLI: Non-YouTube pakai Plyr
+                // Tampilkan video, hapus iframe YouTube
+                videoEl.style.display = '';
+                const ytIframe = document.getElementById('youtubeIframe');
+                if (ytIframe) ytIframe.remove();
+
+                const finalUrl = url;
+                const isHLS = finalUrl.includes('.m3u8');
+                const type = isHLS ? 'application/x-mpegURL' : 'video/mp4';
 
                 videoEl.innerHTML = '';
-
-                // ✅ PENAMBAHAN: Jika YouTube, set atribut data-plyr
-                if (isYouTube) {
-                    videoEl.setAttribute('data-plyr-provider', 'youtube');
-                    videoEl.setAttribute('data-plyr-embed-id', getYouTubeEmbedUrl(url));
-                }
-
-                // ✅ KODE ASLI TETAP ADA: Jika bukan YouTube, pakai source seperti biasa
-                if (!isYouTube) {
-                    const source = document.createElement('source');
-                    source.src = finalUrl;
-                    source.type = type;
-                    videoEl.appendChild(source);
-                }
+                const source = document.createElement('source');
+                source.src = finalUrl;
+                source.type = type;
+                videoEl.appendChild(source);
 
                 if (plyrInstance) {
                     try { plyrInstance.destroy(); } catch(e) {}
@@ -735,15 +768,7 @@
                     disableContextMenu: false,
                     loadSprite: true,
                     iconPrefix: 'plyr',
-                    blankVideo: 'https://cdn.plyr.io/static/blank.mp4',
-                    // ✅ PENAMBAHAN: YouTube settings
-                    youtube: {
-                        noCookie: true,
-                        rel: 0,
-                        showinfo: 0,
-                        iv_load_policy: 3,
-                        modestbranding: 1
-                    }
+                    blankVideo: 'https://cdn.plyr.io/static/blank.mp4'
                 });
 
                 videoEl.addEventListener('loadedmetadata', function() {
@@ -752,7 +777,6 @@
 
                     if (vw && vh) {
                         const wrapper = document.getElementById('playerWrapper');
-                        const inner = wrapper.querySelector('.player-inner');
                         const plyrEl = wrapper.querySelector('.plyr');
 
                         inner.style.width = '100%';
