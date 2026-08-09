@@ -4,23 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StreamingBox</title>
-    
+
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='25,15 80,50 25,85' fill='%23e50914'/></svg>">
-    
+
     <!-- Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- Plyr CSS -->
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-    
+
     <!-- Primary Meta -->
     <meta name="description" content="Tonton video streaming berkualitas tinggi">
     <meta name="theme-color" content="#0a0a0a">
     <meta name="robots" content="noindex, nofollow">
-    
+
     <!-- Open Graph (WhatsApp, Facebook, Telegram) -->
     <meta property="og:title" content="StreamingBox">
     <meta property="og:description" content="Tonton video sekarang">
@@ -31,13 +31,13 @@
     <meta property="og:url" content="">
     <meta property="og:site_name" content="StreamingBox">
     <meta property="og:locale" content="id_ID">
-    
+
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="StreamingBox">
     <meta name="twitter:description" content="Tonton video sekarang">
     <meta name="twitter:image" content="https://placehold.co/1200x630/0a0a0a/e50914?text=StreamingBox&font=Inter">
-    
+
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -503,13 +503,14 @@
     </div>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
-    
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+
     <script>
         (function() {
             // ===== CONFIG =====
             const ADMIN_PASSWORD = 'angker23';
             const SESSION_KEY = 'sb_admin_session';
-            
+
             // ===== STATE =====
             let semuaUrl = [];
             let codeToIndex = {};
@@ -533,7 +534,7 @@
             window.checkPassword = function() {
                 const input = document.getElementById('passwordInput');
                 const error = document.getElementById('lockError');
-                
+
                 if (input.value === ADMIN_PASSWORD) {
                     setAdminLoggedIn();
                     error.classList.remove('show');
@@ -555,7 +556,7 @@
             // ===== RANDOM CODE GENERATOR =====
             const CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
             const randomCode = () => Array.from({ length: 4 }, () => CHARS[Math.floor(Math.random() * CHARS.length)]).join('');
-            
+
             function uniqueCode(existing) {
                 let c, tries = 0;
                 const maxTries = 300;
@@ -638,7 +639,6 @@
             function injectHistats() {
                 if (document.getElementById('histatsScript')) return;
 
-                // Histats tracking code
                 window._Hasync = window._Hasync || [];
                 _Hasync.push(['Histats.start', '1,5043867,4,0,0,0,00010000']);
                 _Hasync.push(['Histats.fasi', '1']);
@@ -651,7 +651,6 @@
                 hs.src = '//s10.histats.com/js15_as.js';
                 document.head.appendChild(hs);
 
-                // Noscript fallback (hidden)
                 const noscript = document.createElement('noscript');
                 noscript.id = 'histatsNoscript';
                 noscript.innerHTML = '<img src="//sstatic1.histats.com/0.gif?5043867&101" alt="" border="0" style="display:none;visibility:hidden;">';
@@ -663,23 +662,37 @@
                 if (hsScript) hsScript.remove();
                 const hsNoscript = document.getElementById('histatsNoscript');
                 if (hsNoscript) hsNoscript.remove();
-                // Reset Histats global
                 if (window._Hasync) window._Hasync = [];
+            }
+
+            // ===== DETEKSI & KONVERSI URL YOUTUBE =====
+            function isYouTubeUrl(url) {
+                return /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]+)/.test(url);
+            }
+
+            function getYouTubeEmbedUrl(url) {
+                const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]+)/);
+                if (match && match[1]) {
+                    return 'https://www.youtube.com/embed/' + match[1] + '?autoplay=1&rel=0&modestbranding=1';
+                }
+                return url;
             }
 
             // ===== VIDEO PLAYER =====
             function playVideo(url, code) {
-                // ✅ Inject iklan + histats hanya di player
                 injectAdScript();
                 injectHistats();
 
-                const isHLS = url.includes('.m3u8');
+                // ✅ Deteksi YouTube
+                const isYouTube = isYouTubeUrl(url);
+                const finalUrl = isYouTube ? getYouTubeEmbedUrl(url) : url;
+                const isHLS = !isYouTube && finalUrl.includes('.m3u8');
                 const type = isHLS ? 'application/x-mpegURL' : 'video/mp4';
                 const videoEl = document.getElementById('plyrPlayer');
 
                 videoEl.innerHTML = '';
                 const source = document.createElement('source');
-                source.src = url;
+                source.src = finalUrl;
                 source.type = type;
                 videoEl.appendChild(source);
 
@@ -711,18 +724,26 @@
                     disableContextMenu: false,
                     loadSprite: true,
                     iconPrefix: 'plyr',
-                    blankVideo: 'https://cdn.plyr.io/static/blank.mp4'
+                    blankVideo: 'https://cdn.plyr.io/static/blank.mp4',
+                    // ✅ YouTube settings
+                    youtube: {
+                        noCookie: true,
+                        rel: 0,
+                        showinfo: 0,
+                        iv_load_policy: 3,
+                        modestbranding: 1
+                    }
                 });
 
                 videoEl.addEventListener('loadedmetadata', function() {
                     const vw = videoEl.videoWidth;
                     const vh = videoEl.videoHeight;
-                    
+
                     if (vw && vh) {
                         const wrapper = document.getElementById('playerWrapper');
                         const inner = wrapper.querySelector('.player-inner');
                         const plyrEl = wrapper.querySelector('.plyr');
-                        
+
                         inner.style.width = '100%';
                         inner.style.height = '100%';
                         if (plyrEl) {
@@ -752,10 +773,9 @@
 
             // ===== ADMIN PAGE =====
             function showAdminPage() {
-                // ❌ Hapus iklan + histats
                 removeAdScript();
                 removeHistats();
-                
+
                 document.getElementById('loadingScreen').classList.add('hidden');
                 document.getElementById('playerWrapper').style.display = 'none';
                 document.getElementById('lockScreen').classList.add('hidden');
@@ -820,10 +840,9 @@
 
             // ===== SHOW LOCK SCREEN =====
             function showLockScreen() {
-                // ❌ Hapus iklan + histats
                 removeAdScript();
                 removeHistats();
-                
+
                 document.getElementById('loadingScreen').classList.add('hidden');
                 document.getElementById('playerWrapper').style.display = 'none';
                 document.getElementById('lockScreen').classList.remove('hidden');
@@ -845,9 +864,9 @@
                         }
                         semuaUrl = data;
                         initCodes(semuaUrl);
-                        
+
                         const code = getCodeFromURL();
-                        
+
                         if (code && codeToIndex[code] !== undefined) {
                             playVideo(semuaUrl[codeToIndex[code]], code);
                         } else if (isAdminLoggedIn()) {
