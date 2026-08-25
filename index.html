@@ -15,7 +15,7 @@
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='20,10 90,50 20,90' fill='%23e50914'/></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <title>Vidnesia</title>
 
     <style>
@@ -30,10 +30,10 @@
         body { background-color: var(--bg-body); color: var(--text-white); touch-action: manipulation; overflow: hidden; }
         .hidden { opacity: 0 !important; pointer-events: none !important; transition: opacity 0.3s ease; }
         .screen-wrapper { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; display: none; }
-        
+
         #loading-screen, #error-screen, #lock-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--bg-screen); z-index: 100; }
         #error-screen, #lock-screen { z-index: 80; display: none; }
-        
+
         .spinner { width: 48px; height: 48px; border: 3px solid var(--border-1); border-top-color: var(--accent-red); border-radius: 50%; animation: spin 0.7s linear infinite; margin-bottom: 16px; }
         .loading-text { color: #555; font-size: 0.8rem; letter-spacing: 3px; font-weight: 600; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -86,7 +86,7 @@
         <div id="play-overlay">
             <div class="play-btn" id="play-btn"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></div>
         </div>
-        
+
         <div id="playerWrap"></div>
         <div id="watermark">▶ VIDNESIA</div>
     </div>
@@ -108,7 +108,8 @@
             <div class="gen-box">
                 <h3>🛠 Generator Video Terenkripsi</h3>
                 <div style="display: flex; gap: 10px;">
-                    <input type="text" id="gen-url" class="lock-input" style="flex: 1; text-align: left;" placeholder="Paste Link YouTube asli di sini...">
+                    <!-- Placeholder sudah diubah agar lebih universal -->
+                    <input type="text" id="gen-url" class="lock-input" style="flex: 1; text-align: left;" placeholder="Paste Link Video (YouTube/MP4/GDrive) di sini...">
                     <button onclick="generateJson()" class="lock-btn" style="width: auto; padding: 12px 20px;">BUAT</button>
                 </div>
                 <textarea id="gen-result" class="lock-input" style="width: 100%; margin-top: 12px; height: 70px; font-family: monospace; display: none;" readonly></textarea>
@@ -141,9 +142,9 @@
             try {
                 const response = await fetch('/data.json?t=' + Date.now());
                 if (!response.ok) throw new Error("Gagal load DB");
-                
+
                 const rawDB = await response.json(); 
-                
+
                 for (const [key, val] of Object.entries(rawDB)) {
                     try { videoDB[key] = atob(val); } 
                     catch(e) { videoDB[key] = val; } 
@@ -215,36 +216,65 @@
             });
         }
 
+        // FUNGSI GENERATOR YANG SUDAH DIPERBARUI (Menerima semua link)
         function generateJson() {
             const input = document.getElementById('gen-url').value;
-            if(!input.includes('youtu')) return alert('Mohon masukkan link YouTube yang valid.');
             
+            if(!input.trim()) return alert('Mohon masukkan link video!');
+
             const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
             let code = '';
             for(let i=0; i<4; i++) code += chars[Math.floor(Math.random() * 52)];
-            
-            const b64 = btoa(input);
+
+            const b64 = btoa(input.trim());
             const finalString = `"${code}": "${b64}",`;
-            
+
             document.getElementById('gen-result').value = finalString;
             document.getElementById('gen-result').style.display = 'block';
             document.getElementById('gen-copy-wrap').style.display = 'block';
         }
 
+        // FUNGSI PLAYER YANG SUDAH DIPERBARUI (Universal Player)
         function setupPlayerView(code) {
-            const ytMatch = videoDB[code].match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
-            const ytId = ytMatch ? ytMatch[1] : null;
+            const url = videoDB[code];
+            if (!url) return showScreen('error-screen');
 
-            if (!ytId) return showScreen('error-screen');
+            let playerHTML = '';
+            let thumbUrl = 'https://placehold.co/1280x720/111/e50914?text=▶+PLAY+VIDEO'; 
 
-            document.getElementById('play-overlay').style.backgroundImage = `url('https://img.youtube.com/vi/${ytId}/maxresdefault.jpg')`;
+            // Cek Jenis URL
+            const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+            const gdriveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+            const isDirectVideo = url.match(/\.(mp4|webm|mkv|ogg)(\?.*)?$/i);
+
+            // Tentukan Player Berdasarkan Link
+            if (ytMatch) {
+                const ytId = ytMatch[1];
+                thumbUrl = `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
+                playerHTML = `<iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>`;
+            } else if (gdriveMatch) {
+                const driveId = gdriveMatch[1];
+                playerHTML = `<iframe src="https://drive.google.com/file/d/${driveId}/preview" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+            } else if (isDirectVideo) {
+                playerHTML = `<video src="${url}" controls autoplay style="width:100%; height:100%; background:black; outline:none;"></video>`;
+            } else {
+                playerHTML = `<iframe src="${url}" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>`;
+            }
+
+            document.getElementById('play-overlay').style.backgroundImage = `url('${thumbUrl}')`;
             injectAdsAndStats();
-            
+
             showScreen('player-screen');
+
+            const playBtn = document.getElementById('play-btn');
             
-            document.getElementById('play-btn').addEventListener('click', () => {
+            // Hapus event listener lama dengan clone untuk menghindari double-click bug (opsional tapi lebih aman)
+            const newPlayBtn = playBtn.cloneNode(true);
+            playBtn.parentNode.replaceChild(newPlayBtn, playBtn);
+            
+            newPlayBtn.addEventListener('click', () => {
                 document.getElementById('play-overlay').classList.add('hidden');
-                document.getElementById('playerWrap').innerHTML = `<iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>`;
+                document.getElementById('playerWrap').innerHTML = playerHTML;
             });
         }
 
@@ -259,7 +289,7 @@
             window._Hasync.push(['Histats.track_hits', '']);
             const hs = document.createElement('script'); hs.type = 'text/javascript'; hs.async = true; hs.src = ('//s10.histats.com/js15_as.js');
             document.head.appendChild(hs);
-            
+
             const ns = document.createElement('noscript');
             ns.innerHTML = '<img src="//sstatic1.histats.com/0.gif?5043867&101" alt="">';
             document.body.appendChild(ns);
