@@ -38,6 +38,10 @@ export type EmbedProvider = 'youtube' | 'vimeo' | 'direct' | 'other';
 
 export type VideoStatus = 'draft' | 'published' | 'archived';
 
+/**
+ * Video entity as stored in the data layer.
+ * tags is always a string array in the data layer.
+ */
 export interface Video {
   id: string;
   shortId: string;
@@ -58,6 +62,10 @@ export interface Video {
   updatedAt: string;
 }
 
+/**
+ * Video input for create and update operations.
+ * tags is a string array at the API layer.
+ */
 export interface VideoInput {
   title: string;
   description: string;
@@ -74,6 +82,11 @@ export interface VideoInput {
   publishedAt?: string;
 }
 
+/**
+ * Video form data used in admin forms.
+ * tags is stored as a comma-separated string in the form,
+ * then converted to string[] before being sent to the API.
+ */
 export interface VideoFormData {
   title: string;
   description: string;
