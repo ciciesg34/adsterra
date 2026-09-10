@@ -1,11 +1,7 @@
 /**
  * Settings type definitions for Vidnesia
- * These types define the structure of site settings and related configurations
+ * These types define the structure of site settings
  */
-
-// ============================================
-// SOCIAL LINKS
-// ============================================
 
 export interface SocialLinks {
   twitter: string;
@@ -14,10 +10,6 @@ export interface SocialLinks {
   youtube: string;
 }
 
-// ============================================
-// SEO SETTINGS
-// ============================================
-
 export interface SeoSettings {
   defaultTitle: string;
   defaultDescription: string;
@@ -25,27 +17,15 @@ export interface SeoSettings {
   ogImage: string;
 }
 
-// ============================================
-// ANALYTICS SETTINGS
-// ============================================
-
 export interface AnalyticsSettings {
   googleAnalyticsId: string;
   enableAnalytics: boolean;
 }
 
-// ============================================
-// MAINTENANCE SETTINGS
-// ============================================
-
 export interface MaintenanceSettings {
   enabled: boolean;
   message: string;
 }
-
-// ============================================
-// FOOTER SETTINGS
-// ============================================
 
 export interface FooterLink {
   label: string;
@@ -56,10 +36,6 @@ export interface FooterSettings {
   copyrightText: string;
   links: FooterLink[];
 }
-
-// ============================================
-// SITE SETTINGS
-// ============================================
 
 export interface SiteSettings {
   siteName: string;
