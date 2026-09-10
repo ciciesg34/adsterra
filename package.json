@@ -4,10 +4,11 @@
   "private": true,
   "description": "Vidnesia - A complete video website platform built with Next.js",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "next lint",
+  "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "next": "14.1.0",
