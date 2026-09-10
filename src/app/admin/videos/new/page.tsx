@@ -7,6 +7,20 @@ import VideoForm from '@/components/admin/VideoForm';
 import { VideoFormData } from '@/types';
 
 /**
+ * Convert a comma-separated tags string into an array of strings.
+ */
+function parseTagsInput(tagsInput: string): string[] {
+  if (!tagsInput || typeof tagsInput !== 'string') {
+    return [];
+  }
+
+  return tagsInput
+    .split(',')
+    .map((tag) => tag.trim())
+    .filter((tag) => tag.length > 0);
+}
+
+/**
  * Admin create video page
  * Provides form for creating a new video
  */
@@ -15,6 +29,9 @@ export default function AdminCreateVideoPage() {
 
   const handleSave = async (data: VideoFormData, shortId?: string) => {
     try {
+      // Convert tags string to array before sending to API
+      const tagsArray = parseTagsInput(data.tags);
+
       const response = await fetch('/api/admin/videos', {
         method: 'POST',
         headers: {
@@ -22,7 +39,7 @@ export default function AdminCreateVideoPage() {
         },
         body: JSON.stringify({
           ...data,
-          tags: data.tags.split(',').map((tag) => tag.trim()).filter((tag) => tag.length > 0),
+          tags: tagsArray,
           shortId,
         }),
       });
