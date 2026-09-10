@@ -6,7 +6,10 @@ import { VideoFormData, Video, EmbedProvider, VideoStatus } from '@/types';
 
 /**
  * VideoForm component
- * Reusable form for creating and editing videos
+ * Reusable form for creating and editing videos.
+ *
+ * Tags are stored as a comma-separated string in the form state.
+ * The string is split into an array before being sent to the API.
  */
 export default function VideoForm({
   video,
@@ -21,7 +24,7 @@ export default function VideoForm({
   const [formData, setFormData] = useState<VideoFormData>({
     title: video?.title || '',
     description: video?.description || '',
-    thumbnailUrl: video?.thumbnailUrl || '',
+    thumbnail: video?.thumbnail || '',
     videoUrl: video?.videoUrl || '',
     embedProvider: video?.embedProvider || 'youtube',
     duration: video?.duration || '',
@@ -30,7 +33,7 @@ export default function VideoForm({
     featured: video?.featured || false,
     status: video?.status || 'draft',
   });
-  const [shortId, setShortId] = useState(video?.id || '');
+  const [shortId, setShortId] = useState(video?.shortId || video?.id || '');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -38,7 +41,7 @@ export default function VideoForm({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
-    
+
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData((prev) => ({ ...prev, [name]: checked }));
@@ -71,21 +74,10 @@ export default function VideoForm({
       return;
     }
 
-    // Parse tags
-    const tagsArray = formData.tags
-      .split(',')
-      .map((tag) => tag.trim())
-      .filter((tag) => tag.length > 0);
-
-    const finalData: VideoFormData = {
-      ...formData,
-      tags: tagsArray.join(', '),
-    };
-
     if (onSave) {
-      onSave(finalData, shortId || undefined);
+      onSave(formData, shortId || undefined);
     }
-    
+
     setIsSubmitting(false);
   };
 
@@ -188,12 +180,12 @@ export default function VideoForm({
 
       {/* Thumbnail URL */}
       <div>
-        <label htmlFor="thumbnailUrl">Thumbnail URL</label>
+        <label htmlFor="thumbnail">Thumbnail URL</label>
         <input
           type="url"
-          id="thumbnailUrl"
-          name="thumbnailUrl"
-          value={formData.thumbnailUrl}
+          id="thumbnail"
+          name="thumbnail"
+          value={formData.thumbnail}
           onChange={handleChange}
           placeholder="https://example.com/thumbnail.jpg"
           className="mt-1"
