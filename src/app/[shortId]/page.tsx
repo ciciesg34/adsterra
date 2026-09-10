@@ -59,7 +59,7 @@ export async function generateMetadata({
       type: 'video.other',
       images: [
         {
-          url: video.thumbnailUrl || '/images/placeholder-thumbnail.svg',
+          url: video.thumbnail || '/images/placeholder-thumbnail.svg',
           width: 640,
           height: 360,
           alt: video.title,
