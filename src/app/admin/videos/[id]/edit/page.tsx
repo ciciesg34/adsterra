@@ -8,6 +8,20 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { Video, VideoFormData } from '@/types';
 
 /**
+ * Convert a comma-separated tags string into an array of strings.
+ */
+function parseTagsInput(tagsInput: string): string[] {
+  if (!tagsInput || typeof tagsInput !== 'string') {
+    return [];
+  }
+
+  return tagsInput
+    .split(',')
+    .map((tag) => tag.trim())
+    .filter((tag) => tag.length > 0);
+}
+
+/**
  * Admin edit video page
  * Provides form for editing an existing video
  */
@@ -15,7 +29,7 @@ export default function AdminEditVideoPage() {
   const router = useRouter();
   const params = useParams();
   const videoId = params.id as string;
-  
+
   const [video, setVideo] = useState<Video | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -43,6 +57,9 @@ export default function AdminEditVideoPage() {
 
   const handleSave = async (data: VideoFormData, shortId?: string) => {
     try {
+      // Convert tags string to array before sending to API
+      const tagsArray = parseTagsInput(data.tags);
+
       const response = await fetch(`/api/admin/videos/${videoId}`, {
         method: 'PUT',
         headers: {
@@ -50,7 +67,7 @@ export default function AdminEditVideoPage() {
         },
         body: JSON.stringify({
           ...data,
-          tags: data.tags.split(',').map((tag) => tag.trim()).filter((tag) => tag.length > 0),
+          tags: tagsArray,
           shortId,
         }),
       });
@@ -130,7 +147,7 @@ export default function AdminEditVideoPage() {
         }}
       >
         <VideoForm video={video} onSave={handleSave} />
-        
+
         <div className="mt-6 pt-4 border-t" style={{ borderTopColor: '#0f3460' }}>
           <button
             onClick={handleDelete}
