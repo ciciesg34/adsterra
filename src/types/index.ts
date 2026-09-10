@@ -80,7 +80,7 @@ export interface VideoFormData {
   videoUrl: string;
   thumbnail: string;
   category: string;
-  tags: string[];
+  tags: string;
   status: VideoStatus;
   featured: boolean;
   duration: string;
