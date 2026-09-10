@@ -3,12 +3,20 @@
  * These types define the structure of site settings
  */
 
+// ============================================
+// SOCIAL LINKS
+// ============================================
+
 export interface SocialLinks {
   twitter: string;
   facebook: string;
   instagram: string;
   youtube: string;
 }
+
+// ============================================
+// SEO SETTINGS
+// ============================================
 
 export interface SeoSettings {
   defaultTitle: string;
@@ -17,15 +25,27 @@ export interface SeoSettings {
   ogImage: string;
 }
 
+// ============================================
+// ANALYTICS SETTINGS
+// ============================================
+
 export interface AnalyticsSettings {
   googleAnalyticsId: string;
   enableAnalytics: boolean;
 }
 
+// ============================================
+// MAINTENANCE SETTINGS
+// ============================================
+
 export interface MaintenanceSettings {
   enabled: boolean;
   message: string;
 }
+
+// ============================================
+// FOOTER SETTINGS
+// ============================================
 
 export interface FooterLink {
   label: string;
@@ -37,7 +57,31 @@ export interface FooterSettings {
   links: FooterLink[];
 }
 
+// ============================================
+// SITE SETTINGS
+// ============================================
+
 export interface SiteSettings {
+  siteName: string;
+  siteDescription: string;
+  siteUrl: string;
+  logoUrl: string;
+  faviconUrl: string;
+  socialLinks: SocialLinks;
+  seo: SeoSettings;
+  analytics: AnalyticsSettings;
+  maintenance: MaintenanceSettings;
+  footer: FooterSettings;
+}
+
+// Alias for backwards compatibility
+export type Settings = SiteSettings;
+
+// ============================================
+// SETTINGS FORM DATA
+// ============================================
+
+export interface SettingsFormData {
   siteName: string;
   siteDescription: string;
   siteUrl: string;
