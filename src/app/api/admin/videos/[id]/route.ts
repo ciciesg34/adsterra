@@ -39,6 +39,8 @@ export async function GET(
 /**
  * PUT /api/admin/videos/[id]
  * Updates a video by ID (requires admin authentication)
+ *
+ * Expects tags to be a string array in the request body.
  */
 export async function PUT(
   request: NextRequest,
@@ -55,6 +57,18 @@ export async function PUT(
     const body = await request.json();
     const { shortId, ...updates } = body;
 
+    // Normalize tags: ensure it is a string array
+    if (updates.tags && !Array.isArray(updates.tags)) {
+      if (typeof updates.tags === 'string') {
+        updates.tags = updates.tags
+          .split(',')
+          .map((tag: string) => tag.trim())
+          .filter((tag: string) => tag.length > 0);
+      } else {
+        updates.tags = [];
+      }
+    }
+
     // If short ID is being changed, validate it
     if (shortId && shortId !== params.id) {
       const validation = validateShortId(shortId, params.id);
@@ -67,7 +81,7 @@ export async function PUT(
           { status: 400 }
         );
       }
-      updates.id = shortId;
+      updates.shortId = shortId;
     }
 
     const video = updateVideoForAdmin(params.id, updates);
@@ -133,7 +147,7 @@ export async function DELETE(
  */
 function isAdminAuthenticated(request: NextRequest): boolean {
   const sessionCookie = request.cookies.get('vidnesia_admin_session');
-  
+
   if (!sessionCookie || !sessionCookie.value) {
     return false;
   }
